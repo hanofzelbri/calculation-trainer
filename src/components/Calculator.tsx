@@ -18,6 +18,7 @@ const Calculator: React.FC = () => {
         currentMode,
         testStarted,
         settings,
+        currentOperation,
         setMode,
         setSettings,
         startNewTask,
@@ -30,6 +31,7 @@ const Calculator: React.FC = () => {
     const [feedback, setFeedback] = useState<string>('');
     const answerRefs = useRef<(HTMLInputElement | null)[]>([]);
     const [settingsOpen, setSettingsOpen] = useState(false);
+    const [settingsChanged, setSettingsChanged] = useState(false);
 
     useEffect(() => {
         setCarries(Array(maxDigits).fill(''));
@@ -41,7 +43,7 @@ const Calculator: React.FC = () => {
         if (currentMode === 'practice' && currentNumbers.length === 0) {
             startNewTask();
         }
-    }, [currentMode]);
+    }, [currentMode, currentNumbers.length, startNewTask]);
 
     const handleCarryInput = (index: number, value: string) => {
         const newCarries = [...carries];
@@ -69,6 +71,7 @@ const Calculator: React.FC = () => {
             startNewTask();
             setCarries(Array(maxDigits).fill(''));
             setAnswer(Array(maxDigits).fill(''));
+            answerRefs.current[0]?.focus();
         }
     };
 
@@ -91,6 +94,19 @@ const Calculator: React.FC = () => {
     const handleRestartTest = () => {
         setMode('test');
         startTest();
+    };
+
+    const handleSettingsChange = (newSettings: Partial<typeof settings>) => {
+        setSettings(newSettings);
+        setSettingsChanged(true);
+    };
+
+    const handleSettingsDialogChange = (open: boolean) => {
+        setSettingsOpen(open);
+        if (!open && settingsChanged && currentMode === 'practice') {
+            startNewTask();
+            setSettingsChanged(false);
+        }
     };
 
     return (
@@ -121,7 +137,7 @@ const Calculator: React.FC = () => {
                         </>
                     )}
                 </div>
-                <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+                <Dialog open={settingsOpen} onOpenChange={handleSettingsDialogChange}>
                     <DialogTrigger asChild>
                         <Button 
                             variant="outline" 
@@ -138,22 +154,95 @@ const Calculator: React.FC = () => {
                         </DialogHeader>
                         <div className="space-y-4 py-4">
                             <div className="space-y-2">
-                                <Label htmlFor="maxNumber">Maximale Zahl</Label>
-                                <Input
-                                    id="maxNumber"
-                                    type="number"
-                                    value={settings.maxNumber}
-                                    onChange={(e: { target: { value: string; }; }) => setSettings({ maxNumber: parseInt(e.target.value) })}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="numberCount">Anzahl der Zahlen</Label>
-                                <Input
-                                    id="numberCount"
-                                    type="number"
-                                    value={settings.numberCount}
-                                    onChange={(e: { target: { value: string; }; }) => setSettings({ numberCount: parseInt(e.target.value) })}
-                                />
+                                <Label>Rechenoperationen</Label>
+                                <div className="flex flex-col space-y-4">
+                                    <div className="space-y-2">
+                                        <label className="flex items-center space-x-2">
+                                            <input
+                                                type="checkbox"
+                                                checked={settings.addition.enabled}
+                                                onChange={(e) => handleSettingsChange({ 
+                                                    addition: { ...settings.addition, enabled: e.target.checked }
+                                                })}
+                                                className="w-4 h-4"
+                                            />
+                                            <span>Addition (+)</span>
+                                        </label>
+                                        {settings.addition.enabled && (
+                                            <div className="ml-6 space-y-4">
+                                                <div>
+                                                    <Label htmlFor="additionMaxNumber">Maximale Zahl</Label>
+                                                    <Input
+                                                        id="additionMaxNumber"
+                                                        type="number"
+                                                        min={1}
+                                                        value={settings.addition.maxNumber}
+                                                        onChange={(e) => handleSettingsChange({ 
+                                                            addition: { ...settings.addition, maxNumber: parseInt(e.target.value) }
+                                                        })}
+                                                        className="mt-1"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <Label htmlFor="additionNumberCount">Anzahl der Zahlen</Label>
+                                                    <Input
+                                                        id="additionNumberCount"
+                                                        type="number"
+                                                        min={2}
+                                                        value={settings.addition.numberCount}
+                                                        onChange={(e) => handleSettingsChange({ 
+                                                            addition: { ...settings.addition, numberCount: parseInt(e.target.value) }
+                                                        })}
+                                                        className="mt-1"
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="flex items-center space-x-2">
+                                            <input
+                                                type="checkbox"
+                                                checked={settings.subtraction.enabled}
+                                                onChange={(e) => handleSettingsChange({ 
+                                                    subtraction: { ...settings.subtraction, enabled: e.target.checked }
+                                                })}
+                                                className="w-4 h-4"
+                                            />
+                                            <span>Subtraktion (-)</span>
+                                        </label>
+                                        {settings.subtraction.enabled && (
+                                            <div className="ml-6 space-y-4">
+                                                <div>
+                                                    <Label htmlFor="subtractionMaxNumber">Maximale Zahl</Label>
+                                                    <Input
+                                                        id="subtractionMaxNumber"
+                                                        type="number"
+                                                        min={1}
+                                                        value={settings.subtraction.maxNumber}
+                                                        onChange={(e) => handleSettingsChange({ 
+                                                            subtraction: { ...settings.subtraction, maxNumber: parseInt(e.target.value) }
+                                                        })}
+                                                        className="mt-1"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <Label htmlFor="subtractionNumberCount">Anzahl der Zahlen</Label>
+                                                    <Input
+                                                        id="subtractionNumberCount"
+                                                        type="number"
+                                                        min={2}
+                                                        value={settings.subtraction.numberCount}
+                                                        onChange={(e) => handleSettingsChange({ 
+                                                            subtraction: { ...settings.subtraction, numberCount: parseInt(e.target.value) }
+                                                        })}
+                                                        className="mt-1"
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                             {currentMode === 'test' && (
                                 <div className="space-y-2">
@@ -162,7 +251,7 @@ const Calculator: React.FC = () => {
                                         id="testDuration"
                                         type="number"
                                         value={settings.testDuration}
-                                        onChange={(e: { target: { value: string; }; }) => setSettings({ testDuration: parseInt(e.target.value) })}
+                                        onChange={(e) => handleSettingsChange({ testDuration: parseInt(e.target.value) })}
                                     />
                                 </div>
                             )}
@@ -186,68 +275,67 @@ const Calculator: React.FC = () => {
 
             {(currentMode === 'practice' || testStarted) && (
                 <div className="calculation-area bg-white p-4 rounded-lg border shadow-sm space-y-4">
-                    <div className="numbers-row space-y-2">
-                        {currentNumbers.map((num, i) => (
-                            <div key={`number-${i}`} className="flex justify-end space-x-2">
-                                {i === currentNumbers.length - 1 && (
-                                    <div className="w-8 h-8 flex items-center justify-center">
-                                        +
-                                    </div>
-                                )}
-                                {String(num).padStart(maxDigits, ' ').split('').map((digit, j) => (
-                                    <div key={`digit-${i}-${j}`} className="w-8 h-8 flex items-center justify-center font-mono">
-                                        {digit !== ' ' ? digit : ''}
-                                    </div>
-                                ))}
+                    <div className="flex flex-col items-end space-y-2">
+                        {currentNumbers.map((number, index) => (
+                            <div key={index} className="flex items-center">
+                                <div className="w-8 h-8 flex items-center justify-center">
+                                    {index === currentNumbers.length - 1 && currentOperation}
+                                </div>
+                                <div className="flex">
+                                    {Array.from({ length: maxDigits - String(number).length }, (_, i) => (
+                                        <div key={i} className="w-8 h-8 flex items-center justify-center font-mono" />
+                                    ))}
+                                    {String(number).split('').map((digit, digitIndex) => (
+                                        <div key={digitIndex} className="w-8 h-8 flex items-center justify-center font-mono">
+                                            {digit}
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         ))}
 
-                        <div className="carries-row flex justify-end space-x-2">
+                        <div className="flex items-center">
                             <div className="w-8 h-8 flex items-center justify-center">
-                                +
+                                {currentOperation}
                             </div>
-                            {carries.map((carry, index) => (
-                                <Input
-                                    key={`carry-${index}`}
-                                    type="text"
-                                    value={carry}
-                                    onChange={(e: { target: { value: string; }; }) => handleCarryInput(index, e.target.value)}
-                                    className="w-8 h-8 text-center p-0"
-                                    maxLength={1}
-                                />
-                            ))}
+                            <div className="flex">
+                                {carries.map((carry, index) => (
+                                    <Input
+                                        key={`carry-${index}`}
+                                        type="text"
+                                        value={carry}
+                                        onChange={(e) => handleCarryInput(index, e.target.value)}
+                                        className="w-8 h-8 text-center p-0 font-mono"
+                                        maxLength={1}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+
+                        <Separator className="my-2" />
+
+                        <div className="flex items-center">
+                            <div className="w-8 h-8 flex items-center justify-center">
+                                =
+                            </div>
+                            <div className="flex">
+                                {answer.map((digit, index) => (
+                                    <Input
+                                        key={`answer-${index}`}
+                                        type="text"
+                                        value={digit}
+                                        onChange={(e) => handleAnswerInput(index, e.target.value)}
+                                        className="w-8 h-8 text-center p-0 font-mono"
+                                        maxLength={1}
+                                        ref={(el) => answerRefs.current[index] = el}
+                                    />
+                                ))}
+                            </div>
                         </div>
                     </div>
 
-                    <Separator />
-
-                    <div className="answer-row flex justify-end space-x-2">
-                        {answer.map((digit, index) => (
-                            <Input
-                                key={`answer-${index}`}
-                                ref={(el: HTMLInputElement | null) => answerRefs.current[index] = el}
-                                type="text"
-                                value={digit}
-                                onChange={(e: { target: { value: string; }; }) => handleAnswerInput(index, e.target.value)}
-                                className="w-8 h-8 text-center p-0"
-                                maxLength={1}
-                            />
-                        ))}
-                    </div>
-                    <div className="flex justify-end items-center">
-                        {currentMode === 'practice' && (
-                            <Button
-                                variant="outline"
-                                onClick={startNewTask}
-                                className="mr-auto"
-                            >
-                                Neue Aufgabe
-                            </Button>
-                        )}
-                        <Button
-                            onClick={handleCheck}
-                            disabled={answer.some(digit => digit === '')}
-                        >
+                    <div className="flex justify-center mt-4">
+                        <Button onClick={handleCheck}>
                             Überprüfen
                         </Button>
                     </div>

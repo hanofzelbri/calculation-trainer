@@ -19,10 +19,17 @@ export interface GameState {
     correctAnswersInTest: number;
     showResultPopup: boolean;
     history: HistoryEntry[];
+    currentOperation: '+' | '-';
+}
+
+export interface OperationSettings {
+    enabled: boolean;
+    maxNumber: number;
+    numberCount: number;
 }
 
 export interface Settings {
-    maxNumber: number;
-    numberCount: number;
+    addition: OperationSettings;
+    subtraction: OperationSettings;
     testDuration: number;
 }

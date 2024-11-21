@@ -16,7 +16,9 @@ interface GameStore extends GameState {
     addToHistory: (entry: HistoryEntry) => void;
 }
 
-const getRandomNumber = (max: number) => Math.floor(Math.random() * max) + 1;
+const getRandomNumber = (max: number) => {
+    return Math.floor(Math.random() * max) + 1;
+};
 
 export const useGameStore = create<GameStore>((set, get) => ({
     // Initial state
@@ -28,21 +30,30 @@ export const useGameStore = create<GameStore>((set, get) => ({
     score: 0,
     taskStartTime: null,
     testStarted: false,
-    testStartTime: null as number | null,
+    testStartTime: null,
     correctAnswersInTest: 0,
     showResultPopup: false,
     showSettings: false,
     history: [],
+    currentOperation: '+',
     
     // Settings
     settings: {
-        maxNumber: 10000,
-        numberCount: 4,
+        addition: {
+            enabled: true,
+            maxNumber: 10000,
+            numberCount: 2
+        },
+        subtraction: {
+            enabled: false,
+            maxNumber: 10000,
+            numberCount: 2
+        },
         testDuration: 5,
     },
 
     // Actions
-    setMode: (mode) => {
+    setMode: (mode: GameMode) => {
         set({ 
             currentMode: mode, 
             testStarted: false,
@@ -61,9 +72,25 @@ export const useGameStore = create<GameStore>((set, get) => ({
         }
     },
     
-    setSettings: (newSettings) => set((state) => ({
-        settings: { ...state.settings, ...newSettings }
-    })),
+    setSettings: (newSettings: Partial<Settings>) => {
+        const currentSettings = get().settings;
+        const validatedSettings = { ...currentSettings, ...newSettings };
+        
+        // Ensure minimum of 2 numbers
+        if (validatedSettings.addition.numberCount < 2) {
+            validatedSettings.addition.numberCount = 2;
+        }
+        if (validatedSettings.subtraction.numberCount < 2) {
+            validatedSettings.subtraction.numberCount = 2;
+        }
+
+        // Ensure at least one operation is enabled
+        if (!validatedSettings.addition.enabled && !validatedSettings.subtraction.enabled) {
+            validatedSettings.addition.enabled = true;
+        }
+        
+        set({ settings: validatedSettings });
+    },
     
     startNewTask: () => {
         const { settings, currentMode, testStarted } = get();
@@ -73,32 +100,56 @@ export const useGameStore = create<GameStore>((set, get) => ({
             return;
         }
 
-        const numbers = Array(settings.numberCount)
-            .fill(0)
-            .map(() => getRandomNumber(settings.maxNumber));
+        // Select random operation from enabled operations
+        const operations: ('+' | '-')[] = [];
+        if (settings.addition.enabled) operations.push('+');
+        if (settings.subtraction.enabled) operations.push('-');
+        const operation = operations[Math.floor(Math.random() * operations.length)];
+        
+        // Get the operation settings
+        const operationSettings = operation === '+' ? settings.addition : settings.subtraction;
+        
+        let numbers;
+        if (operation === '-') {
+            // Generate first number
+            const firstNumber = Math.floor(Math.random() * operationSettings.maxNumber) + 1;
+            // Generate remaining numbers that are smaller than the first number
+            const remainingNumbers = Array(operationSettings.numberCount - 1)
+                .fill(0)
+                .map(() => Math.floor(Math.random() * firstNumber));
+            numbers = [firstNumber, ...remainingNumbers];
+        } else {
+            numbers = Array(operationSettings.numberCount)
+                .fill(0)
+                .map(() => Math.floor(Math.random() * operationSettings.maxNumber) + 1);
+        }
+        
+        const answer = operation === '+' 
+            ? numbers.reduce((sum, num) => sum + num, 0)
+            : numbers.reduce((diff, num, idx) => idx === 0 ? num : diff - num, 0);
             
-        const answer = numbers.reduce((sum, num) => sum + num, 0);
         const maxDigits = Math.max(
             ...numbers.map(num => String(num).length),
-            String(answer).length
+            String(Math.abs(answer)).length
         );
         
         set({
             currentNumbers: numbers,
             correctAnswer: answer,
             maxDigits,
+            currentOperation: operation,
             taskStartTime: (currentMode === 'practice' || (currentMode === 'test' && testStarted)) ? Date.now() : null,
         });
     },
     
-    checkAnswer: (answer) => {
-        const { correctAnswer, currentNumbers, taskStartTime, currentMode, testStarted, settings } = get();
+    checkAnswer: (answer: number) => {
+        const { correctAnswer, currentNumbers, taskStartTime, currentMode, testStarted, settings, currentOperation } = get();
         const isCorrect = answer === correctAnswer;
         
         if (isCorrect) {
             // Add to history when answer is correct
             const timeTaken = taskStartTime ? Date.now() - taskStartTime : 0;
-            const task = currentNumbers.join(' + ') + ' = ' + correctAnswer;
+            const task = currentNumbers.join(` ${currentOperation} `) + ' = ' + correctAnswer;
             get().addToHistory({
                 task,
                 isCorrect: true,
@@ -129,7 +180,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         return isCorrect;
     },
     
-    updateScore: (points) => set((state) => ({ score: state.score + points })),
+    updateScore: (points: number) => set((state) => ({ score: state.score + points })),
     
     resetHearts: () => set({ hearts: 3 }),
     
@@ -166,7 +217,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         testStartTime: null
     })),
     
-    addToHistory: (entry) => set((state) => ({
+    addToHistory: (entry: HistoryEntry) => set((state) => ({
         history: [entry, ...(state.history || [])].slice(0, 10) // Keep last 10 entries
     })),
 }));
