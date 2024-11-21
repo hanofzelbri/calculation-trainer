@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <title>Calculator</title>
+    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect fill="#4CAF50" x="3" y="2" width="18" height="20" rx="2"/>
+        <rect fill="#FFFFFF" x="5" y="4" width="14" height="4" rx="1"/>
+        <circle fill="#FFFFFF" cx="7" cy="11" r="1.5"/>
+        <circle fill="#FFFFFF" cx="12" cy="11" r="1.5"/>
+        <circle fill="#FFFFFF" cx="17" cy="11" r="1.5"/>
+        <circle fill="#FFFFFF" cx="7" cy="15" r="1.5"/>
+        <circle fill="#FFFFFF" cx="12" cy="15" r="1.5"/>
+        <circle fill="#FFFFFF" cx="17" cy="15" r="1.5"/>
+        <circle fill="#FFFFFF" cx="7" cy="19" r="1.5"/>
+        <circle fill="#FFFFFF" cx="12" cy="19" r="1.5"/>
+        <circle fill="#FFFFFF" cx="17" cy="19" r="1.5"/>
+    </g>
+</svg>
