@@ -1,84 +1,13 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Schriftliches Addieren Lernen</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>Schriftliches Addieren</h1>
-            <div class="mode-switch">
-                <button id="practiceMode" class="active">Übungsmodus</button>
-                <button id="testMode">Testmodus</button>
-            </div>
-        </div>
-
-        <div class="info-bar">
-            <div class="timer">
-                <div class="pomodoro">
-                    <span id="pomodoroTime">25:00</span>
-                    <button id="startPomodoro">Start</button>
-                </div>
-                <div class="test-timer hidden">
-                    <span id="testTime">05:00</span>
-                </div>
-            </div>
-            <div class="hearts hidden">
-                <i class="fas fa-heart"></i>
-                <i class="fas fa-heart"></i>
-                <i class="fas fa-heart"></i>
-            </div>
-            <div class="highscore">
-                Highscore: <span id="currentScore">0</span>
-            </div>
-        </div>
-        
-        <div class="settings">
-            <div class="setting-item">
-                <label for="maxNumber">Maximale Zahl:</label>
-                <input type="number" id="maxNumber" value="10000" min="1" max="9999">
-            </div>
-            <div class="setting-item">
-                <label for="numberCount">Anzahl der Zahlen:</label>
-                <input type="number" id="numberCount" value="4" min="2" max="5">
-            </div>
-            <div class="setting-item test-settings hidden">
-                <label for="testDuration">Testdauer (Minuten):</label>
-                <input type="number" id="testDuration" value="5" min="1" max="30">
-            </div>
-            <button id="newTask">Neue Aufgabe</button>
-        </div>
-
-        <div class="task-container">
-            <div class="calculation-area">
-                <div id="carries" class="carries">
-                    <!-- Hier werden die Überträge eingegeben -->
-                </div>
-                <div id="numbers" class="numbers">
-                    <!-- Hier werden die zu addierenden Zahlen angezeigt -->
-                </div>
-                <div id="answer-grid" class="answer-grid">
-                    <!-- Hier werden die Eingabefelder für die Antwort erstellt -->
-                </div>
-            </div>
-            <div class="button-area">
-                <button id="checkAnswer" disabled>Überprüfen</button>
-            </div>
-        </div>
-
-        <div id="feedback" class="feedback"></div>
-
-        <div class="history">
-            <h2>Verlauf</h2>
-            <div class="history-list">
-                <!-- Hier wird der Verlauf der Aufgaben angezeigt -->
-            </div>
-        </div>
-    </div>
-    <script src="script.js"></script>
-</body>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite + React + TS</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>

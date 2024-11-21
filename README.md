@@ -1,30 +1,50 @@
-# Calculation Trainer
+# React + TypeScript + Vite
 
-A web-based application designed to help users improve their mental math skills through interactive practice sessions.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## Features
+Currently, two official plugins are available:
 
-- Practice basic arithmetic operations (addition, subtraction, multiplication, division)
-- Customizable difficulty levels
-- Real-time feedback on answers
-- Track your progress and performance
-- Responsive design that works on both desktop and mobile devices
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-## How to Use
+## Expanding the ESLint configuration
 
-1. Open the application in your web browser
-2. Select the type of calculation you want to practice
-3. Choose your preferred difficulty level
-4. Start solving the math problems
-5. Get immediate feedback on your answers
-6. Track your improvement over time
+If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
 
-## Technologies Used
+- Configure the top-level `parserOptions` property like this:
 
-- HTML5
-- CSS3
-- JavaScript (Vanilla)
+```js
+export default tseslint.config({
+  languageOptions: {
+    // other options...
+    parserOptions: {
+      project: ['./tsconfig.node.json', './tsconfig.app.json'],
+      tsconfigRootDir: import.meta.dirname,
+    },
+  },
+})
+```
 
-## Getting Started
+- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
+- Optionally add `...tseslint.configs.stylisticTypeChecked`
+- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
 
-Simply clone this repository and open `index.html` in your web browser to start practicing:
+```js
+// eslint.config.js
+import react from 'eslint-plugin-react'
+
+export default tseslint.config({
+  // Set the react version
+  settings: { react: { version: '18.3' } },
+  plugins: {
+    // Add the react plugin
+    react,
+  },
+  rules: {
+    // other rules...
+    // Enable its recommended rules
+    ...react.configs.recommended.rules,
+    ...react.configs['jsx-runtime'].rules,
+  },
+})
+```
