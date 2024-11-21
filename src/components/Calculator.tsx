@@ -98,7 +98,7 @@ const Calculator: React.FC = () => {
                 <div className="flex items-center space-x-2">
                     <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
                         <DialogTrigger asChild>
-                            <Button variant="outline" size="icon">
+                            <Button variant="outline" size="icon" type="button">
                                 <Settings className="h-4 w-4" />
                             </Button>
                         </DialogTrigger>
