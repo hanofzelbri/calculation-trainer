@@ -250,7 +250,7 @@ function createNewTask() {
 
 // Funktion zur Behandlung von Tastatureingaben
 function handleInputKeydown(e) {
-    if (e.key === 'Tab') {
+    if (e.key === 'Tab' || e.key === 'ArrowRight') {  // ArrowRight für den Pfeil-Button auf Mobilgeräten
         e.preventDefault(); // Standard Tab-Verhalten verhindern
         moveToNextField(e.target);
     }
@@ -265,15 +265,22 @@ function moveToNextField(currentInput) {
     if (isAnswerInput) {
         // Von Result zu Carry eine Position weiter links
         const carryInputs = Array.from(document.querySelectorAll('.carry-input'));
+        const answerInputs = Array.from(document.querySelectorAll('.answer-input'));
         
         const targetPosition = currentPosition + 1;
 
         if (targetPosition < maxDigits) {
             const targetCarry = carryInputs.find(input => parseInt(input.dataset.position) === targetPosition);
-            
             if (targetCarry) {
                 targetCarry.focus();
+                return;
             }
+        }
+
+        // Wenn kein Carry-Feld gefunden wurde, zum nächsten Answer-Feld gehen
+        const nextAnswer = answerInputs.find(input => parseInt(input.dataset.position) === currentPosition + 1);
+        if (nextAnswer) {
+            nextAnswer.focus();
         }
     } else if (isCarryInput) {
         // Von Carry zu Result an gleicher Position
