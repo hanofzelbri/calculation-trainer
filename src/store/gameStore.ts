@@ -137,15 +137,18 @@ export const useGameStore = create<GameStore>((set, get) => ({
             currentOperation: operation,
             taskStartTime: (currentMode === 'practice' || (currentMode === 'test' && testStarted)) ? Date.now() : null,
         });
+
+        // Check achievements and quests when starting new task
+        get().checkAchievements();
+        get().checkQuestProgress();
     },
     
     checkAnswer: (answer: number) => {
         const state = get();
         const correct = answer === state.correctAnswer;
         const endTime = Date.now();
-        
+
         if (correct) {
-            // Füge den Versuch zur History hinzu
             state.addToHistory({
                 timestamp: endTime,
                 taskStartTime: state.taskStartTime || endTime,
@@ -160,6 +163,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
             state.checkQuestProgress();
         } else {
             state.decreaseHeart();
+            // Also check achievements and quests on wrong answers
+            state.checkAchievements();
+            state.checkQuestProgress();
         }
 
         return correct;
@@ -203,29 +209,41 @@ export const useGameStore = create<GameStore>((set, get) => ({
     })),
     
     addToHistory: (entry: HistoryEntry) => {
-        const state = get();
-        const newHistory = [...state.history, entry];
-        set({ history: newHistory });
-        localStorage.setItem('gameHistory', JSON.stringify(newHistory));
+        set((state) => ({
+            history: [...state.history, entry]
+        }));
+        // Check achievements and quests after adding to history
+        get().checkAchievements();
+        get().checkQuestProgress();
+        localStorage.setItem('gameHistory', JSON.stringify(get().history));
     },
     
     addExperience: (exp: number) => {
-        const state = get();
-        let newExperience = state.experience + exp;
-        let newLevel = state.level;
-        
-        while (newExperience >= state.experienceToNextLevel) {
-            newExperience -= state.experienceToNextLevel;
-            newLevel++;
-        }
-
-        set({ 
-            experience: newExperience,
-            level: newLevel
+        set((state) => {
+            const newExperience = state.experience + exp;
+            const experienceToNextLevel = state.level * 100;
+            
+            if (newExperience >= experienceToNextLevel) {
+                return {
+                    experience: newExperience - experienceToNextLevel,
+                    level: state.level + 1,
+                    experienceToNextLevel: (state.level + 1) * 100
+                };
+            }
+            
+            return {
+                experience: newExperience,
+                experienceToNextLevel
+            };
         });
         
-        localStorage.setItem('experience', newExperience.toString());
-        localStorage.setItem('level', newLevel.toString());
+        // Check achievements and quests after experience gain
+        get().checkAchievements();
+        get().checkQuestProgress();
+        
+        // Save to localStorage
+        localStorage.setItem('level', get().level.toString());
+        localStorage.setItem('experience', get().experience.toString());
     },
     
     checkAchievements: () => {
@@ -255,24 +273,71 @@ export const useGameStore = create<GameStore>((set, get) => ({
         // Check each achievement
         const currentTime = new Date();
 
-        // Streak master is updated in checkAnswer function
+        // Streak master - track consecutive correct answers
+        let currentStreak = 0;
+        for (let i = state.history.length - 1; i >= 0; i--) {
+            if (state.history[i].correct) {
+                currentStreak++;
+            } else {
+                break;
+            }
+        }
+        updateAchievement('streak_master', currentStreak);
+
+        // Daily warrior - track consecutive days of practice
+        const uniqueDays = new Set();
+        let lastDate: Date | null = null;
+        let consecutiveDays = 0;
+
+        // Sort history by date, newest first
+        const sortedHistory = [...state.history].sort((a, b) => b.timestamp - a.timestamp);
         
-        // Speed demon is updated in checkAnswer function
-        
-        // Daily solver
+        for (const entry of sortedHistory) {
+            const entryDate = new Date(entry.timestamp);
+            const dateString = entryDate.toDateString();
+            
+            if (!uniqueDays.has(dateString)) {
+                uniqueDays.add(dateString);
+                
+                if (lastDate === null) {
+                    lastDate = entryDate;
+                    consecutiveDays = 1;
+                } else {
+                    const dayDiff = Math.floor((lastDate.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24));
+                    if (dayDiff === 1) {
+                        consecutiveDays++;
+                        lastDate = entryDate;
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
+        updateAchievement('daily_warrior', consecutiveDays);
+
+        // Time bender - track fast solutions (under 15 seconds)
+        const fastSolutions = state.history.filter(entry => 
+            entry.correct && entry.taskStartTime && 
+            (entry.timestamp - entry.taskStartTime) < 15000
+        ).length;
+        updateAchievement('time_bender', fastSolutions);
+
+        // Daily solver - track tasks completed today
         const dailyTaskCount = state.history.filter(entry => {
             const entryDate = new Date(entry.timestamp);
-            return entryDate.toDateString() === currentTime.toDateString();
+            return entry.correct && entryDate.toDateString() === currentTime.toDateString();
         }).length;
         updateAchievement('daily_solver', dailyTaskCount);
 
-        // Big numbers
+        // Total tasks completed (all time)
+        const totalTasks = state.history.filter(entry => entry.correct).length;
+        updateAchievement('total_tasks', totalTasks);
+
+        // Big numbers - track tasks with numbers over 1000
         const bigNumberTasks = state.history.filter(entry =>
-            entry.numbers.some(num => num > 1000)
+            entry.correct && entry.numbers.some(num => Math.abs(num) > 1000)
         ).length;
         updateAchievement('big_numbers', bigNumberTasks);
-
-        // Perfect test is updated when a test is completed
 
         if (achievementsUpdated) {
             set({ achievements });
