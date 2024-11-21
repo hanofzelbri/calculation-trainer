@@ -21,7 +21,7 @@ const Calculator: React.FC = () => {
         startNewTask,
         checkAnswer,
         startTest,
-        endTest    } = useGameStore();
+        endTest } = useGameStore();
 
     const [carries, setCarries] = useState<string[]>([]);
     const [answer, setAnswer] = useState<string[]>([]);
@@ -60,9 +60,9 @@ const Calculator: React.FC = () => {
     const handleCheck = () => {
         const userAnswer = parseInt(answer.join(''), 10);
         const isCorrect = checkAnswer(userAnswer);
-        
+
         setFeedback(isCorrect ? 'Richtig!' : 'Falsch, versuche es noch einmal.');
-        
+
         if (isCorrect) {
             startNewTask();
             setCarries(Array(maxDigits).fill(''));
@@ -82,70 +82,68 @@ const Calculator: React.FC = () => {
         <div className="container mx-auto p-4 space-y-4">
             <div className="flex justify-between items-center">
                 <div className="space-x-2">
-                    <Button 
+                    <Button
                         variant={currentMode === 'practice' ? 'default' : 'outline'}
                         onClick={() => handleModeSwitch('practice')}
                     >
                         Übungsmodus
                     </Button>
-                    <Button 
+                    <Button
                         variant={currentMode === 'test' ? 'default' : 'outline'}
                         onClick={() => handleModeSwitch('test')}
                     >
                         Testmodus
                     </Button>
                 </div>
-                <div className="flex items-center space-x-2">
-                    <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
-                        <DialogTrigger asChild>
-                            <Button variant="outline" size="icon" type="button">
-                                <Settings className="h-4 w-4" />
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle>Einstellungen</DialogTitle>
-                            </DialogHeader>
-                            <div className="space-y-4 py-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="maxNumber">Maximale Zahl</Label>
-                                    <Input
-                                        id="maxNumber"
-                                        type="number"
-                                        value={settings.maxNumber}
-                                        onChange={(e: { target: { value: string; }; }) => setSettings({ maxNumber: parseInt(e.target.value) })}
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="numberCount">Anzahl der Zahlen</Label>
-                                    <Input
-                                        id="numberCount"
-                                        type="number"
-                                        value={settings.numberCount}
-                                        onChange={(e: { target: { value: string; }; }) => setSettings({ numberCount: parseInt(e.target.value) })}
-                                    />
-                                </div>
-                                {currentMode === 'test' && (
-                                    <div className="space-y-2">
-                                        <Label htmlFor="testDuration">Testdauer (Minuten)</Label>
-                                        <Input
-                                            id="testDuration"
-                                            type="number"
-                                            value={settings.testDuration}
-                                            onChange={(e: { target: { value: string; }; }) => setSettings({ testDuration: parseInt(e.target.value) })}
-                                        />
-                                    </div>
-                                )}
-                            </div>
-                        </DialogContent>
-                    </Dialog>
-                    
-                    {currentMode === 'test' && !testStarted && (
-                        <Button onClick={handleStartTest}>
-                            Test starten
+                <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+                    <DialogTrigger asChild>
+                        <Button variant="outline" size="icon" type="button">
+                            <Settings className="h-4 w-4" />
                         </Button>
-                    )}
-                </div>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Einstellungen</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4 py-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="maxNumber">Maximale Zahl</Label>
+                                <Input
+                                    id="maxNumber"
+                                    type="number"
+                                    value={settings.maxNumber}
+                                    onChange={(e: { target: { value: string; }; }) => setSettings({ maxNumber: parseInt(e.target.value) })}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="numberCount">Anzahl der Zahlen</Label>
+                                <Input
+                                    id="numberCount"
+                                    type="number"
+                                    value={settings.numberCount}
+                                    onChange={(e: { target: { value: string; }; }) => setSettings({ numberCount: parseInt(e.target.value) })}
+                                />
+                            </div>
+                            {currentMode === 'test' && (
+                                <div className="space-y-2">
+                                    <Label htmlFor="testDuration">Testdauer (Minuten)</Label>
+                                    <Input
+                                        id="testDuration"
+                                        type="number"
+                                        value={settings.testDuration}
+                                        onChange={(e: { target: { value: string; }; }) => setSettings({ testDuration: parseInt(e.target.value) })}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    </DialogContent>
+                </Dialog>
+
+                {currentMode === 'test' && !testStarted && (
+                    <Button onClick={handleStartTest}>
+                        Test starten
+                    </Button>
+                )}
             </div>
 
             {currentMode === 'test' && testStarted && (
@@ -168,7 +166,7 @@ const Calculator: React.FC = () => {
                             ))}
                         </div>
                     ))}
-                    
+
                     <div className="carries-row flex justify-end space-x-2">
                         <div className="w-8 h-8 flex items-center justify-center">
                             +
@@ -185,9 +183,9 @@ const Calculator: React.FC = () => {
                         ))}
                     </div>
                 </div>
-                
+
                 <Separator />
-                
+
                 <div className="answer-row flex justify-end space-x-2">
                     {answer.map((digit, index) => (
                         <Input
@@ -201,17 +199,16 @@ const Calculator: React.FC = () => {
                         />
                     ))}
                 </div>
-                
-                <div className="flex justify-between items-center">
+                <div className="flex justify-end items-center">
                     {currentMode === 'practice' && (
                         <Button
                             variant="outline"
                             onClick={startNewTask}
+                            className="mr-auto"
                         >
                             Neue Aufgabe
                         </Button>
                     )}
-                    
                     <Button
                         onClick={handleCheck}
                         disabled={answer.some(digit => digit === '')}
@@ -219,7 +216,7 @@ const Calculator: React.FC = () => {
                         Überprüfen
                     </Button>
                 </div>
-                
+
                 {feedback && (
                     <div className={`text-center ${feedback.includes('Richtig') ? 'text-green-600' : 'text-red-600'}`}>
                         {feedback}
