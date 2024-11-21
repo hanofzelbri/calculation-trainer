@@ -198,6 +198,7 @@ function createNewTask() {
     const carriesContainer = document.createElement('div');
     carriesContainer.className = 'input-container';
     carriesDiv.appendChild(carriesContainer);
+
     
     // Übertragsfelder erstellen (von rechts nach links)
     for (let i = maxDigits - 1; i >= 0; i--) {
@@ -205,6 +206,9 @@ function createNewTask() {
         input.type = 'text';
         input.maxLength = 1;
         input.className = 'carry-input';
+        input.inputMode = 'numeric'; // Numerische Tastatur auf Mobilgeräten
+        input.pattern = '[0-9]*';    // Erlaubt nur Zahlen
+        input.maxLength = 1;
         input.dataset.position = i;
         input.addEventListener('input', handleCarryInput);
         input.addEventListener('keydown', handleInputKeydown);
@@ -225,6 +229,8 @@ function createNewTask() {
         const input = document.createElement('input');
         input.type = 'text';
         input.maxLength = 1;
+        input.inputMode = 'numeric'; // Numerische Tastatur auf Mobilgeräten
+        input.pattern = '[0-9]*';    // Erlaubt nur Zahlen
         input.className = 'answer-input';
         input.dataset.position = i;
         input.addEventListener('input', handleAnswerInput);
