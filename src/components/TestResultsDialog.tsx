@@ -21,7 +21,8 @@ export const TestResultsDialog: React.FC<TestResultsDialogProps> = ({ onClose, o
 
     // Berechne die Statistiken
     const averageTimePerTask = history.length > 0 
-        ? history.slice(0, correctAnswersInTest).reduce((sum, entry) => sum + entry.time, 0) / correctAnswersInTest / 1000 
+        ? history.slice(0, correctAnswersInTest)
+            .reduce((sum, entry) => sum + (entry.timestamp - entry.taskStartTime), 0) / correctAnswersInTest / 1000 
         : 0;
 
     const accuracy = history.length > 0

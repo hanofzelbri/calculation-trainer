@@ -43,7 +43,7 @@ const Calculator: React.FC = () => {
         if (currentMode === 'practice' && currentNumbers.length === 0) {
             startNewTask();
         }
-    }, [currentMode, currentNumbers.length, startNewTask]);
+    }, [currentMode, currentNumbers.length]);
 
     const handleCarryInput = (index: number, value: string) => {
         const newCarries = [...carries];
@@ -110,13 +110,14 @@ const Calculator: React.FC = () => {
     };
 
     return (
-        <div className="container mx-auto p-4 space-y-4">
-            <div className="flex justify-between items-center">
-                <div className="space-x-2">
+        <div className="container p-6 space-y-6 bg-white rounded-lg shadow-lg">
+            <div className="flex justify-between items-center gap-4 flex-wrap">
+                <div className="space-x-3">
                     {testStarted ? (
                         <Button 
                             variant="destructive" 
                             onClick={handleEndTest}
+                            className="text-lg py-6 px-8"
                         >
                             Test beenden
                         </Button>
@@ -125,12 +126,14 @@ const Calculator: React.FC = () => {
                             <Button
                                 variant={currentMode === 'practice' ? 'default' : 'outline'}
                                 onClick={() => handleModeSwitch('practice')}
+                                className="text-lg py-6 px-8"
                             >
                                 Übungsmodus
                             </Button>
                             <Button
                                 variant={currentMode === 'test' ? 'default' : 'outline'}
                                 onClick={() => handleModeSwitch('test')}
+                                className="text-lg py-6 px-8"
                             >
                                 Testmodus
                             </Button>
@@ -144,34 +147,35 @@ const Calculator: React.FC = () => {
                             size="icon" 
                             type="button"
                             disabled={testStarted}
+                            className="text-lg py-6 px-8"
                         >
-                            <Settings className="h-4 w-4" />
+                            <Settings className="h-6 w-6" />
                         </Button>
                     </DialogTrigger>
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>Einstellungen</DialogTitle>
+                            <DialogTitle className="text-lg">Einstellungen</DialogTitle>
                         </DialogHeader>
-                        <div className="space-y-4 py-4">
-                            <div className="space-y-2">
-                                <Label>Rechenoperationen</Label>
-                                <div className="flex flex-col space-y-4">
-                                    <div className="space-y-2">
-                                        <label className="flex items-center space-x-2">
+                        <div className="space-y-6 py-6">
+                            <div className="space-y-4">
+                                <Label className="text-lg">Rechenoperationen</Label>
+                                <div className="flex flex-col space-y-6">
+                                    <div className="space-y-4">
+                                        <label className="flex items-center space-x-4">
                                             <input
                                                 type="checkbox"
                                                 checked={settings.addition.enabled}
                                                 onChange={(e) => handleSettingsChange({ 
                                                     addition: { ...settings.addition, enabled: e.target.checked }
                                                 })}
-                                                className="w-4 h-4"
+                                                className="w-6 h-6"
                                             />
-                                            <span>Addition (+)</span>
+                                            <span className="text-lg">Addition (+)</span>
                                         </label>
                                         {settings.addition.enabled && (
-                                            <div className="ml-6 space-y-4">
+                                            <div className="ml-6 space-y-6">
                                                 <div>
-                                                    <Label htmlFor="additionMaxNumber">Maximale Zahl</Label>
+                                                    <Label htmlFor="additionMaxNumber" className="text-lg">Maximale Zahl</Label>
                                                     <Input
                                                         id="additionMaxNumber"
                                                         type="number"
@@ -180,11 +184,11 @@ const Calculator: React.FC = () => {
                                                         onChange={(e) => handleSettingsChange({ 
                                                             addition: { ...settings.addition, maxNumber: parseInt(e.target.value) }
                                                         })}
-                                                        className="mt-1"
+                                                        className="mt-2 text-lg p-6"
                                                     />
                                                 </div>
                                                 <div>
-                                                    <Label htmlFor="additionNumberCount">Anzahl der Zahlen</Label>
+                                                    <Label htmlFor="additionNumberCount" className="text-lg">Anzahl der Zahlen</Label>
                                                     <Input
                                                         id="additionNumberCount"
                                                         type="number"
@@ -193,28 +197,28 @@ const Calculator: React.FC = () => {
                                                         onChange={(e) => handleSettingsChange({ 
                                                             addition: { ...settings.addition, numberCount: parseInt(e.target.value) }
                                                         })}
-                                                        className="mt-1"
+                                                        className="mt-2 text-lg p-6"
                                                     />
                                                 </div>
                                             </div>
                                         )}
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="flex items-center space-x-2">
+                                    <div className="space-y-4">
+                                        <label className="flex items-center space-x-4">
                                             <input
                                                 type="checkbox"
                                                 checked={settings.subtraction.enabled}
                                                 onChange={(e) => handleSettingsChange({ 
                                                     subtraction: { ...settings.subtraction, enabled: e.target.checked }
                                                 })}
-                                                className="w-4 h-4"
+                                                className="w-6 h-6"
                                             />
-                                            <span>Subtraktion (-)</span>
+                                            <span className="text-lg">Subtraktion (-)</span>
                                         </label>
                                         {settings.subtraction.enabled && (
-                                            <div className="ml-6 space-y-4">
+                                            <div className="ml-6 space-y-6">
                                                 <div>
-                                                    <Label htmlFor="subtractionMaxNumber">Maximale Zahl</Label>
+                                                    <Label htmlFor="subtractionMaxNumber" className="text-lg">Maximale Zahl</Label>
                                                     <Input
                                                         id="subtractionMaxNumber"
                                                         type="number"
@@ -223,11 +227,11 @@ const Calculator: React.FC = () => {
                                                         onChange={(e) => handleSettingsChange({ 
                                                             subtraction: { ...settings.subtraction, maxNumber: parseInt(e.target.value) }
                                                         })}
-                                                        className="mt-1"
+                                                        className="mt-2 text-lg p-6"
                                                     />
                                                 </div>
                                                 <div>
-                                                    <Label htmlFor="subtractionNumberCount">Anzahl der Zahlen</Label>
+                                                    <Label htmlFor="subtractionNumberCount" className="text-lg">Anzahl der Zahlen</Label>
                                                     <Input
                                                         id="subtractionNumberCount"
                                                         type="number"
@@ -236,7 +240,7 @@ const Calculator: React.FC = () => {
                                                         onChange={(e) => handleSettingsChange({ 
                                                             subtraction: { ...settings.subtraction, numberCount: parseInt(e.target.value) }
                                                         })}
-                                                        className="mt-1"
+                                                        className="mt-2 text-lg p-6"
                                                     />
                                                 </div>
                                             </div>
@@ -245,13 +249,14 @@ const Calculator: React.FC = () => {
                                 </div>
                             </div>
                             {currentMode === 'test' && (
-                                <div className="space-y-2">
-                                    <Label htmlFor="testDuration">Testdauer (Minuten)</Label>
+                                <div className="space-y-4">
+                                    <Label htmlFor="testDuration" className="text-lg">Testdauer (Minuten)</Label>
                                     <Input
                                         id="testDuration"
                                         type="number"
                                         value={settings.testDuration}
                                         onChange={(e) => handleSettingsChange({ testDuration: parseInt(e.target.value) })}
+                                        className="mt-2 text-lg p-6"
                                     />
                                 </div>
                             )}
@@ -261,32 +266,32 @@ const Calculator: React.FC = () => {
             </div>
 
             {currentMode === 'test' && !testStarted && (
-                <Button onClick={handleStartTest}>
+                <Button onClick={handleStartTest} className="text-lg py-6 px-8">
                     Test starten
                 </Button>
             )}
 
             {currentMode === 'test' && testStarted && (
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center gap-4 flex-wrap">
                     <Hearts />
                     <Timer mode={currentMode} onTestEnd={endTest} />
                 </div>
             )}
 
             {(currentMode === 'practice' || testStarted) && (
-                <div className="calculation-area bg-white p-4 rounded-lg border shadow-sm space-y-4">
-                    <div className="flex flex-col items-end space-y-2">
+                <div className="calculation-area bg-white p-6 rounded-lg border shadow-lg space-y-6">
+                    <div className="flex flex-col items-end space-y-4">
                         {currentNumbers.map((number, index) => (
                             <div key={index} className="flex items-center">
-                                <div className="w-8 h-8 flex items-center justify-center">
+                                <div className="w-12 h-12 flex items-center justify-center">
                                     {index === currentNumbers.length - 1 && currentOperation}
                                 </div>
                                 <div className="flex">
                                     {Array.from({ length: maxDigits - String(number).length }, (_, i) => (
-                                        <div key={i} className="w-8 h-8 flex items-center justify-center font-mono" />
+                                        <div key={i} className="w-12 h-12 flex items-center justify-center font-mono" />
                                     ))}
                                     {String(number).split('').map((digit, digitIndex) => (
-                                        <div key={digitIndex} className="w-8 h-8 flex items-center justify-center font-mono">
+                                        <div key={digitIndex} className="w-12 h-12 flex items-center justify-center font-mono">
                                             {digit}
                                         </div>
                                     ))}
@@ -295,7 +300,7 @@ const Calculator: React.FC = () => {
                         ))}
 
                         <div className="flex items-center">
-                            <div className="w-8 h-8 flex items-center justify-center">
+                            <div className="w-12 h-12 flex items-center justify-center">
                                 {currentOperation}
                             </div>
                             <div className="flex">
@@ -305,17 +310,17 @@ const Calculator: React.FC = () => {
                                         type="text"
                                         value={carry}
                                         onChange={(e) => handleCarryInput(index, e.target.value)}
-                                        className="w-8 h-8 text-center p-0 font-mono"
+                                        className="w-12 h-12 text-center p-0 font-mono text-lg"
                                         maxLength={1}
                                     />
                                 ))}
                             </div>
                         </div>
 
-                        <Separator className="my-2" />
+                        <Separator className="my-4" />
 
                         <div className="flex items-center">
-                            <div className="w-8 h-8 flex items-center justify-center">
+                            <div className="w-12 h-12 flex items-center justify-center">
                                 =
                             </div>
                             <div className="flex">
@@ -325,7 +330,7 @@ const Calculator: React.FC = () => {
                                         type="text"
                                         value={digit}
                                         onChange={(e) => handleAnswerInput(index, e.target.value)}
-                                        className="w-8 h-8 text-center p-0 font-mono"
+                                        className="w-12 h-12 text-center p-0 font-mono text-lg"
                                         maxLength={1}
                                         ref={(el) => answerRefs.current[index] = el}
                                     />
@@ -334,14 +339,14 @@ const Calculator: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="flex justify-center mt-4">
-                        <Button onClick={handleCheck}>
+                    <div className="flex justify-center mt-6">
+                        <Button onClick={handleCheck} className="text-lg py-6 px-8">
                             Überprüfen
                         </Button>
                     </div>
 
                     {feedback && (
-                        <div className={`text-center ${feedback.includes('Richtig') ? 'text-green-600' : 'text-red-600'}`}>
+                        <div className={`text-center ${feedback.includes('Richtig') ? 'text-green-600' : 'text-red-600'} text-lg`}>
                             {feedback}
                         </div>
                     )}

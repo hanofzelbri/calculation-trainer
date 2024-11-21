@@ -4,6 +4,14 @@ import { useGameStore } from '../store/gameStore';
 export const History = () => {
   const history = useGameStore(state => state.history);
 
+  const formatTask = (entry: typeof history[0]) => {
+    return `${entry.numbers.join(` ${entry.operation} `)} = ${entry.userAnswer}`;
+  };
+
+  const calculateTimeTaken = (entry: typeof history[0]) => {
+    return Math.round((entry.timestamp - entry.taskStartTime) / 100) / 10;
+  };
+
   return (
     <Card className="mt-4">
       <CardHeader>
@@ -15,13 +23,13 @@ export const History = () => {
             <div
               key={index}
               className={`p-3 rounded ${
-                entry.isCorrect ? 'bg-green-100' : 'bg-red-100'
+                entry.correct ? 'bg-green-100' : 'bg-red-100'
               }`}
             >
               <div className="flex justify-between items-center">
-                <span>{entry.task}</span>
+                <span>{formatTask(entry)}</span>
                 <span className="text-gray-600">
-                  {Math.round(entry.time / 100) / 10} Sekunden
+                  {calculateTimeTaken(entry)} Sekunden
                 </span>
               </div>
             </div>

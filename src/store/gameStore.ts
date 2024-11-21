@@ -1,7 +1,13 @@
 import { create } from 'zustand';
-import { GameState, GameMode, Settings, HistoryEntry } from '../types';
+import { GameState, GameMode, Settings, HistoryEntry, Achievement } from '../types';
+import { defaultAchievements } from '../data/achievementData';
+import { createQuestSlice, QuestStore } from './questStore';
 
-interface GameStore extends GameState {
+interface GameStore extends GameState, QuestStore {
+    level: number;
+    experience: number;
+    experienceToNextLevel: number;
+    achievements: Achievement[];
     settings: Settings;
     showSettings: boolean;
     setMode: (mode: GameMode) => void;
@@ -14,6 +20,9 @@ interface GameStore extends GameState {
     startTest: () => void;
     endTest: () => void;
     addToHistory: (entry: HistoryEntry) => void;
+    addExperience: (exp: number) => void;
+    checkAchievements: () => void;
+    checkQuestProgress: () => void;
 }
 
 export const useGameStore = create<GameStore>((set, get) => ({
@@ -32,7 +41,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
     showSettings: false,
     history: [],
     currentOperation: '+',
-    
+    level: 1,
+    experience: 0,
+    experienceToNextLevel: 100,
+    achievements: JSON.parse(localStorage.getItem('achievements') || 'null') || defaultAchievements,
+
     // Settings
     settings: {
         addition: {
@@ -139,41 +152,30 @@ export const useGameStore = create<GameStore>((set, get) => ({
     },
     
     checkAnswer: (answer: number) => {
-        const { correctAnswer, currentNumbers, taskStartTime, currentMode, testStarted, settings, currentOperation } = get();
-        const isCorrect = answer === correctAnswer;
+        const state = get();
+        const correct = answer === state.correctAnswer;
+        const endTime = Date.now();
         
-        if (isCorrect) {
-            // Add to history when answer is correct
-            const timeTaken = taskStartTime ? Date.now() - taskStartTime : 0;
-            const task = currentNumbers.join(` ${currentOperation} `) + ' = ' + correctAnswer;
-            get().addToHistory({
-                task,
-                isCorrect: true,
-                time: timeTaken
-            });
+        // Füge den Versuch zur History hinzu
+        state.addToHistory({
+            timestamp: endTime,
+            taskStartTime: state.taskStartTime || endTime,
+            numbers: state.currentNumbers,
+            userAnswer: answer,
+            correctAnswer: state.correctAnswer,
+            correct,
+            operation: state.currentOperation
+        });
 
-            if (currentMode === 'test' && testStarted) {
-                set(state => ({ correctAnswersInTest: state.correctAnswersInTest + 1 }));
-                get().updateScore(10);
-            }
-        } else if (currentMode === 'test' && testStarted) {
-            get().decreaseHeart();
+        if (correct) {
+            state.updateScore(1);
+            state.checkAchievements();
+            state.checkQuestProgress();
+        } else {
+            state.decreaseHeart();
         }
 
-        // Check if test should end due to time
-        if (currentMode === 'test' && testStarted) {
-            const testStartTime = get().testStartTime;
-            if (testStartTime && Date.now() - testStartTime >= settings.testDuration * 60 * 1000) {
-                get().endTest();
-            }
-        }
-        
-        // Start new task if answer was correct or if in test mode
-        if (isCorrect || (currentMode === 'test' && testStarted)) {
-            get().startNewTask();
-        }
-        
-        return isCorrect;
+        return correct;
     },
     
     updateScore: (points: number) => set((state) => ({ score: state.score + points })),
@@ -216,4 +218,78 @@ export const useGameStore = create<GameStore>((set, get) => ({
     addToHistory: (entry: HistoryEntry) => set((state) => ({
         history: [entry, ...(state.history || [])].slice(0, 10) // Keep last 10 entries
     })),
+    
+    addExperience: (exp: number) => {
+        set(state => {
+            const newExperience = state.experience + exp;
+            const experienceNeeded = state.experienceToNextLevel;
+            
+            if (newExperience >= experienceNeeded) {
+                // Level Up!
+                return {
+                    level: state.level + 1,
+                    experience: newExperience - experienceNeeded,
+                    experienceToNextLevel: Math.floor(experienceNeeded * 1.5), // Jedes Level braucht mehr XP
+                };
+            }
+            
+            return {
+                experience: newExperience
+            };
+        });
+    },
+    
+    checkAchievements: () => {
+        const state = get();
+        const achievements = [...state.achievements];
+        let achievementsUpdated = false;
+
+        // Helper function to update achievement
+        const updateAchievement = (id: string, progress: number) => {
+            const achievement = achievements.find(a => a.id === id);
+            if (achievement) {
+                achievement.progress = progress;
+                
+                // Find the next level that hasn't been reached yet
+                const nextLevel = achievement.levels.find(level => 
+                    level.level === achievement.currentLevel + 1 && 
+                    progress >= level.requirement
+                );
+                
+                if (nextLevel && achievement.currentLevel < achievement.maxLevel) {
+                    achievement.currentLevel = nextLevel.level;
+                    achievementsUpdated = true;
+                }
+            }
+        };
+
+        // Check each achievement
+        const currentTime = new Date();
+
+        // Streak master is updated in checkAnswer function
+        
+        // Speed demon is updated in checkAnswer function
+        
+        // Daily solver
+        const dailyTaskCount = state.history.filter(entry => {
+            const entryDate = new Date(entry.timestamp);
+            return entryDate.toDateString() === currentTime.toDateString();
+        }).length;
+        updateAchievement('daily_solver', dailyTaskCount);
+
+        // Big numbers
+        const bigNumberTasks = state.history.filter(entry =>
+            entry.numbers.some(num => num > 1000)
+        ).length;
+        updateAchievement('big_numbers', bigNumberTasks);
+
+        // Perfect test is updated when a test is completed
+
+        if (achievementsUpdated) {
+            set({ achievements });
+            // Save to localStorage
+            localStorage.setItem('achievements', JSON.stringify(achievements));
+        }
+    },
+    ...createQuestSlice(set, get)
 }));
