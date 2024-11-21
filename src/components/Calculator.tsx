@@ -30,6 +30,7 @@ const Calculator: React.FC = () => {
     const [answer, setAnswer] = useState<string[]>([]);
     const [feedback, setFeedback] = useState<string>('');
     const answerRefs = useRef<(HTMLInputElement | null)[]>([]);
+    const carryRefs = useRef<(HTMLInputElement | null)[]>([]);
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [settingsChanged, setSettingsChanged] = useState(false);
 
@@ -37,7 +38,13 @@ const Calculator: React.FC = () => {
         setCarries(Array(maxDigits).fill(''));
         setAnswer(Array(maxDigits).fill(''));
         answerRefs.current = answerRefs.current.slice(0, maxDigits);
-    }, [maxDigits]);
+        carryRefs.current = carryRefs.current.slice(0, maxDigits);
+
+        // Focus on the rightmost result field when a new task starts
+        if (answerRefs.current.length > 0) {
+            answerRefs.current[maxDigits - 1]?.focus();
+        }
+    }, [maxDigits, currentNumbers]);
 
     useEffect(() => {
         if (currentMode === 'practice' && currentNumbers.length === 0) {
@@ -49,6 +56,11 @@ const Calculator: React.FC = () => {
         const newCarries = [...carries];
         newCarries[index] = value;
         setCarries(newCarries);
+
+        if (value) {
+            // After entering a carry, focus the corresponding result field
+            answerRefs.current[index]?.focus();
+        }
     };
 
     const handleAnswerInput = (index: number, value: string) => {
@@ -56,12 +68,37 @@ const Calculator: React.FC = () => {
         newAnswer[index] = value;
         setAnswer(newAnswer);
 
-        if (value && index < maxDigits - 1) {
-            answerRefs.current[index + 1]?.focus();
+        if (value) {
+            // After entering a result, focus the carry field to the left
+            if (index > 0) {
+                carryRefs.current[index - 1]?.focus();
+            }
         }
     };
 
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>, type: 'carry' | 'answer', index: number) => {
+        if (event.key === 'Tab') {
+            event.preventDefault();
+
+            if (type === 'carry') {
+                // From carry field, go to corresponding result field
+                answerRefs.current[index]?.focus();
+            } else if (type === 'answer') {
+                // From result field, go to carry field to the left
+                if (index > 0) {
+                    carryRefs.current[index - 1]?.focus();
+                }
+            }
+        }
+    };
+
+    const isAnswerComplete = () => {
+        return answer.every(digit => digit !== '');
+    };
+
     const handleCheck = () => {
+        if (!isAnswerComplete()) return;
+        
         const userAnswer = parseInt(answer.join(''), 10);
         const isCorrect = checkAnswer(userAnswer);
 
@@ -114,8 +151,8 @@ const Calculator: React.FC = () => {
             <div className="flex justify-between items-center gap-4 flex-wrap">
                 <div className="space-x-3">
                     {testStarted ? (
-                        <Button 
-                            variant="destructive" 
+                        <Button
+                            variant="destructive"
                             onClick={handleEndTest}
                             className="text-lg py-6 px-8"
                         >
@@ -142,9 +179,9 @@ const Calculator: React.FC = () => {
                 </div>
                 <Dialog open={settingsOpen} onOpenChange={handleSettingsDialogChange}>
                     <DialogTrigger asChild>
-                        <Button 
-                            variant="outline" 
-                            size="icon" 
+                        <Button
+                            variant="outline"
+                            size="icon"
                             type="button"
                             disabled={testStarted}
                             className="text-lg py-6 px-8"
@@ -165,7 +202,7 @@ const Calculator: React.FC = () => {
                                             <input
                                                 type="checkbox"
                                                 checked={settings.addition.enabled}
-                                                onChange={(e) => handleSettingsChange({ 
+                                                onChange={(e) => handleSettingsChange({
                                                     addition: { ...settings.addition, enabled: e.target.checked }
                                                 })}
                                                 className="w-6 h-6"
@@ -181,7 +218,7 @@ const Calculator: React.FC = () => {
                                                         type="number"
                                                         min={1}
                                                         value={settings.addition.maxNumber}
-                                                        onChange={(e) => handleSettingsChange({ 
+                                                        onChange={(e) => handleSettingsChange({
                                                             addition: { ...settings.addition, maxNumber: parseInt(e.target.value) }
                                                         })}
                                                         className="mt-2 text-lg p-6"
@@ -194,7 +231,7 @@ const Calculator: React.FC = () => {
                                                         type="number"
                                                         min={2}
                                                         value={settings.addition.numberCount}
-                                                        onChange={(e) => handleSettingsChange({ 
+                                                        onChange={(e) => handleSettingsChange({
                                                             addition: { ...settings.addition, numberCount: parseInt(e.target.value) }
                                                         })}
                                                         className="mt-2 text-lg p-6"
@@ -208,7 +245,7 @@ const Calculator: React.FC = () => {
                                             <input
                                                 type="checkbox"
                                                 checked={settings.subtraction.enabled}
-                                                onChange={(e) => handleSettingsChange({ 
+                                                onChange={(e) => handleSettingsChange({
                                                     subtraction: { ...settings.subtraction, enabled: e.target.checked }
                                                 })}
                                                 className="w-6 h-6"
@@ -224,7 +261,7 @@ const Calculator: React.FC = () => {
                                                         type="number"
                                                         min={1}
                                                         value={settings.subtraction.maxNumber}
-                                                        onChange={(e) => handleSettingsChange({ 
+                                                        onChange={(e) => handleSettingsChange({
                                                             subtraction: { ...settings.subtraction, maxNumber: parseInt(e.target.value) }
                                                         })}
                                                         className="mt-2 text-lg p-6"
@@ -237,7 +274,7 @@ const Calculator: React.FC = () => {
                                                         type="number"
                                                         min={2}
                                                         value={settings.subtraction.numberCount}
-                                                        onChange={(e) => handleSettingsChange({ 
+                                                        onChange={(e) => handleSettingsChange({
                                                             subtraction: { ...settings.subtraction, numberCount: parseInt(e.target.value) }
                                                         })}
                                                         className="mt-2 text-lg p-6"
@@ -278,7 +315,7 @@ const Calculator: React.FC = () => {
                 </div>
             )}
 
-            {(currentMode === 'practice' || testStarted) && (
+            {(currentMode === 'practice' || (currentMode === 'test' && testStarted)) && (
                 <div className="calculation-area bg-white p-6 rounded-lg border shadow-lg space-y-6">
                     <div className="flex flex-col items-end space-y-4">
                         {currentNumbers.map((number, index) => (
@@ -310,8 +347,12 @@ const Calculator: React.FC = () => {
                                         type="text"
                                         value={carry}
                                         onChange={(e) => handleCarryInput(index, e.target.value)}
+                                        onKeyDown={(e) => handleKeyDown(e, 'carry', index)}
                                         className="w-12 h-12 text-center p-0 font-mono text-lg"
                                         maxLength={1}
+                                        ref={(el) => carryRefs.current[index] = el}
+                                        inputMode="numeric"
+                                        pattern="[0-9]*"
                                     />
                                 ))}
                             </div>
@@ -330,31 +371,38 @@ const Calculator: React.FC = () => {
                                         type="text"
                                         value={digit}
                                         onChange={(e) => handleAnswerInput(index, e.target.value)}
+                                        onKeyDown={(e) => handleKeyDown(e, 'answer', index)}
                                         className="w-12 h-12 text-center p-0 font-mono text-lg"
                                         maxLength={1}
                                         ref={(el) => answerRefs.current[index] = el}
+                                        inputMode="numeric"
+                                        pattern="[0-9]*"
                                     />
                                 ))}
                             </div>
                         </div>
-                    </div>
 
-                    <div className="flex justify-center mt-6">
-                        <Button onClick={handleCheck} className="text-lg py-6 px-8">
-                            Überprüfen
-                        </Button>
-                    </div>
-
-                    {feedback && (
-                        <div className={`text-center ${feedback.includes('Richtig') ? 'text-green-600' : 'text-red-600'} text-lg`}>
-                            {feedback}
+                        <div className="flex justify-center mt-6">
+                            <Button 
+                                onClick={handleCheck} 
+                                className="text-lg py-6 px-8"
+                                disabled={!isAnswerComplete()}
+                            >
+                                Überprüfen
+                            </Button>
                         </div>
-                    )}
+
+                        {feedback && (
+                            <div className={`text-center ${feedback.includes('Richtig') ? 'text-green-600' : 'text-red-600'} text-lg`}>
+                                {feedback}
+                            </div>
+                        )}
+                    </div>
                 </div>
             )}
 
             <History />
-            <TestResultsDialog 
+            <TestResultsDialog
                 onClose={handleCloseResults}
                 onRestart={handleRestartTest}
             />

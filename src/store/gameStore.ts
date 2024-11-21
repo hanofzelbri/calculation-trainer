@@ -39,10 +39,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
     correctAnswersInTest: 0,
     showResultPopup: false,
     showSettings: false,
-    history: [],
+    history: JSON.parse(localStorage.getItem('gameHistory') || '[]'),
     currentOperation: '+',
-    level: 1,
-    experience: 0,
+    level: parseInt(localStorage.getItem('level') || '1'),
+    experience: parseInt(localStorage.getItem('experience') || '0'),
     experienceToNextLevel: 100,
     achievements: JSON.parse(localStorage.getItem('achievements') || 'null') || defaultAchievements,
 
@@ -156,18 +156,17 @@ export const useGameStore = create<GameStore>((set, get) => ({
         const correct = answer === state.correctAnswer;
         const endTime = Date.now();
         
-        // Füge den Versuch zur History hinzu
-        state.addToHistory({
-            timestamp: endTime,
-            taskStartTime: state.taskStartTime || endTime,
-            numbers: state.currentNumbers,
-            userAnswer: answer,
-            correctAnswer: state.correctAnswer,
-            correct,
-            operation: state.currentOperation
-        });
-
         if (correct) {
+            // Füge den Versuch zur History hinzu
+            state.addToHistory({
+                timestamp: endTime,
+                taskStartTime: state.taskStartTime || endTime,
+                numbers: state.currentNumbers,
+                userAnswer: answer,
+                correctAnswer: state.correctAnswer,
+                correct,
+                operation: state.currentOperation
+            });
             state.updateScore(1);
             state.checkAchievements();
             state.checkQuestProgress();
@@ -215,28 +214,30 @@ export const useGameStore = create<GameStore>((set, get) => ({
         testStartTime: null
     })),
     
-    addToHistory: (entry: HistoryEntry) => set((state) => ({
-        history: [entry, ...(state.history || [])].slice(0, 10) // Keep last 10 entries
-    })),
+    addToHistory: (entry: HistoryEntry) => {
+        const state = get();
+        const newHistory = [...state.history, entry];
+        set({ history: newHistory });
+        localStorage.setItem('gameHistory', JSON.stringify(newHistory));
+    },
     
     addExperience: (exp: number) => {
-        set(state => {
-            const newExperience = state.experience + exp;
-            const experienceNeeded = state.experienceToNextLevel;
-            
-            if (newExperience >= experienceNeeded) {
-                // Level Up!
-                return {
-                    level: state.level + 1,
-                    experience: newExperience - experienceNeeded,
-                    experienceToNextLevel: Math.floor(experienceNeeded * 1.5), // Jedes Level braucht mehr XP
-                };
-            }
-            
-            return {
-                experience: newExperience
-            };
+        const state = get();
+        let newExperience = state.experience + exp;
+        let newLevel = state.level;
+        
+        while (newExperience >= state.experienceToNextLevel) {
+            newExperience -= state.experienceToNextLevel;
+            newLevel++;
+        }
+
+        set({ 
+            experience: newExperience,
+            level: newLevel
         });
+        
+        localStorage.setItem('experience', newExperience.toString());
+        localStorage.setItem('level', newLevel.toString());
     },
     
     checkAchievements: () => {

@@ -8,27 +8,39 @@ export interface QuestStore extends DailyQuestState {
 }
 
 const loadDailyQuests = (): DailyQuestState => {
-    const savedQuests = localStorage.getItem('dailyQuests');
-    if (savedQuests) {
-        const parsedQuests = JSON.parse(savedQuests);
-        const lastRefreshDate = new Date(parsedQuests.lastRefreshDate);
-        const today = new Date();
+    try {
+        const savedQuests = localStorage.getItem('dailyQuests');
+        if (savedQuests) {
+            const parsedQuests = JSON.parse(savedQuests);
+            const lastRefreshDate = new Date(parsedQuests.lastRefreshDate);
+            const today = new Date();
 
-        // Wenn es ein neuer Tag ist, generiere neue Quests
-        if (lastRefreshDate.toDateString() !== today.toDateString()) {
-            return {
-                quests: generateDailyQuests(),
-                lastRefreshDate: today.toISOString()
-            };
+            // Vergleiche nur das Datum, nicht die Uhrzeit
+            if (lastRefreshDate.toDateString() !== today.toDateString()) {
+                const newState = {
+                    quests: generateDailyQuests(),
+                    lastRefreshDate: today.toISOString()
+                };
+                localStorage.setItem('dailyQuests', JSON.stringify(newState));
+                return newState;
+            }
+            return parsedQuests;
         }
-        return parsedQuests;
-    }
 
-    // Wenn keine gespeicherten Quests existieren, generiere neue
-    return {
-        quests: generateDailyQuests(),
-        lastRefreshDate: new Date().toISOString()
-    };
+        // Wenn keine gespeicherten Quests existieren, generiere neue
+        const initialState = {
+            quests: generateDailyQuests(),
+            lastRefreshDate: new Date().toISOString()
+        };
+        localStorage.setItem('dailyQuests', JSON.stringify(initialState));
+        return initialState;
+    } catch (error) {
+        console.error('Error loading daily quests:', error);
+        return {
+            quests: generateDailyQuests(),
+            lastRefreshDate: new Date().toISOString()
+        };
+    }
 };
 
 export const createQuestSlice = (set: any, get: any) => ({
@@ -101,8 +113,15 @@ export const createQuestSlice = (set: any, get: any) => ({
     },
 
     refreshDailyQuests: () => {
-        const newState = loadDailyQuests();
-        set(newState);
-        localStorage.setItem('dailyQuests', JSON.stringify(newState));
+        // Prüfe ob es wirklich ein neuer Tag ist
+        const state = get();
+        const lastRefresh = new Date(state.lastRefreshDate);
+        const today = new Date();
+        
+        if (lastRefresh.toDateString() !== today.toDateString()) {
+            const newState = loadDailyQuests();
+            set(newState);
+            localStorage.setItem('dailyQuests', JSON.stringify(newState));
+        }
     }
 });
