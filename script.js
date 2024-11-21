@@ -256,23 +256,14 @@ function moveToNextField(currentInput) {
     const isCarryInput = currentInput.classList.contains('carry-input');
     const isAnswerInput = currentInput.classList.contains('answer-input');
     
-    console.log('Current input:', {
-        position: currentPosition,
-        isCarry: isCarryInput,
-        isAnswer: isAnswerInput
-    });
-    
     if (isAnswerInput) {
         // Von Result zu Carry eine Position weiter links
         const carryInputs = Array.from(document.querySelectorAll('.carry-input'));
-        console.log('Found carry inputs:', carryInputs.map(input => input.dataset.position));
         
         const targetPosition = currentPosition + 1;
-        console.log('Looking for carry at position:', targetPosition);
-        
+
         if (targetPosition < maxDigits) {
             const targetCarry = carryInputs.find(input => parseInt(input.dataset.position) === targetPosition);
-            console.log('Found target carry:', targetCarry?.dataset.position);
             
             if (targetCarry) {
                 targetCarry.focus();
@@ -281,10 +272,8 @@ function moveToNextField(currentInput) {
     } else if (isCarryInput) {
         // Von Carry zu Result an gleicher Position
         const answerInputs = Array.from(document.querySelectorAll('.answer-input'));
-        console.log('Found answer inputs:', answerInputs.map(input => input.dataset.position));
         
         const targetAnswer = answerInputs.find(input => parseInt(input.dataset.position) === currentPosition);
-        console.log('Found target answer:', targetAnswer?.dataset.position);
         
         if (targetAnswer) {
             targetAnswer.focus();
@@ -294,7 +283,6 @@ function moveToNextField(currentInput) {
 
 // Funktion zur Behandlung der Antworteingabe
 function handleAnswerInput(e) {
-    console.log('Answer input event:', e.target.value);
     if (e.target.value) {
         // Nur Zahlen erlauben
         const value = e.target.value.replace(/[^0-9]/g, '');
