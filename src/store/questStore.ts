@@ -71,7 +71,7 @@ export const createQuestSlice = (set: any, get: any) => ({
 
                     case "Blitz-Champion":
                         progress = state.history.filter((entry: { timestamp: number; taskStartTime: number; }) =>
-                            entry.timestamp - entry.taskStartTime < 60000
+                            entry.timestamp - entry.taskStartTime < 15000
                         ).length;
                         break;
 

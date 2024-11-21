@@ -81,7 +81,7 @@ const questTemplates: Partial<DailyQuest>[] = [
     },
     {
         title: "Blitz-Champion",
-        description: "Löse 10 Aufgaben in jeweils unter 1 Minute",
+        description: "Löse 10 Aufgaben in jeweils unter 15 Sekunden",
         difficulty: DailyQuestDifficulty.GOLD,
         requirement: 10,
         experienceReward: 200

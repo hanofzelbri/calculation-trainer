@@ -47,18 +47,18 @@ export const useGameStore = create<GameStore>((set, get) => ({
     achievements: JSON.parse(localStorage.getItem('achievements') || 'null') || defaultAchievements,
 
     // Settings
-    settings: {
+    settings: JSON.parse(localStorage.getItem('gameSettings') || 'null') || {
         addition: {
             enabled: true,
-            maxNumber: 10000,
+            maxNumber: 100,
             numberCount: 2
         },
         subtraction: {
-            enabled: false,
-            maxNumber: 10000,
+            enabled: true,
+            maxNumber: 100,
             numberCount: 2
         },
-        testDuration: 5,
+        testDuration: 5
     },
 
     // Actions
@@ -82,23 +82,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
     },
     
     setSettings: (newSettings: Partial<Settings>) => {
-        const currentSettings = get().settings;
-        const validatedSettings = { ...currentSettings, ...newSettings };
-        
-        // Ensure minimum of 2 numbers
-        if (validatedSettings.addition.numberCount < 2) {
-            validatedSettings.addition.numberCount = 2;
-        }
-        if (validatedSettings.subtraction.numberCount < 2) {
-            validatedSettings.subtraction.numberCount = 2;
-        }
-
-        // Ensure at least one operation is enabled
-        if (!validatedSettings.addition.enabled && !validatedSettings.subtraction.enabled) {
-            validatedSettings.addition.enabled = true;
-        }
-        
-        set({ settings: validatedSettings });
+        set((state) => {
+            const updatedSettings = { ...state.settings, ...newSettings };
+            localStorage.setItem('gameSettings', JSON.stringify(updatedSettings));
+            return { settings: updatedSettings };
+        });
     },
     
     startNewTask: () => {
