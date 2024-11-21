@@ -1,12 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { useGameStore } from '../store/gameStore';
 
-interface HistoryEntry {
-  task: string;
-  isCorrect: boolean;
-  time: number;
-}
-
 export const History = () => {
   const history = useGameStore(state => state.history);
 
