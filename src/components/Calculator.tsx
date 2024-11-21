@@ -1,13 +1,17 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useGameStore } from '../store/gameStore';
-import { Hearts } from './Hearts';
 import { Timer } from './Timer';
 import { History } from './History';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
+import { Settings } from "lucide-react";
 
 const Calculator: React.FC = () => {
     const {
         currentNumbers,
-        correctAnswer,
         maxDigits,
         currentMode,
         testStarted,
@@ -17,24 +21,20 @@ const Calculator: React.FC = () => {
         startNewTask,
         checkAnswer,
         startTest,
-        endTest,
-        addToHistory,
-        taskStartTime
-    } = useGameStore();
+        endTest    } = useGameStore();
 
     const [carries, setCarries] = useState<string[]>([]);
     const [answer, setAnswer] = useState<string[]>([]);
     const [feedback, setFeedback] = useState<string>('');
     const answerRefs = useRef<(HTMLInputElement | null)[]>([]);
+    const [settingsOpen, setSettingsOpen] = useState(false);
 
     useEffect(() => {
-        // Initialize empty arrays for carries and answer based on maxDigits
         setCarries(Array(maxDigits).fill(''));
         setAnswer(Array(maxDigits).fill(''));
         answerRefs.current = answerRefs.current.slice(0, maxDigits);
     }, [maxDigits]);
 
-    // Start first task when component mounts
     useEffect(() => {
         if (currentMode === 'practice' && currentNumbers.length === 0) {
             startNewTask();
@@ -52,7 +52,6 @@ const Calculator: React.FC = () => {
         newAnswer[index] = value;
         setAnswer(newAnswer);
 
-        // Move to next field if value is entered
         if (value && index < maxDigits - 1) {
             answerRefs.current[index + 1]?.focus();
         }
@@ -65,11 +64,6 @@ const Calculator: React.FC = () => {
         setFeedback(isCorrect ? 'Richtig!' : 'Falsch, versuche es noch einmal.');
         
         if (isCorrect) {
-            // Create history entry
-            const task = `${currentNumbers.join(' + ')} = ${userAnswer}`;
-            const time = Date.now() - (taskStartTime || Date.now());
-            addToHistory({ task, isCorrect, time });
-            
             startNewTask();
             setCarries(Array(maxDigits).fill(''));
             setAnswer(Array(maxDigits).fill(''));
@@ -78,165 +72,160 @@ const Calculator: React.FC = () => {
 
     const handleModeSwitch = (mode: 'practice' | 'test') => {
         setMode(mode);
-        if (mode === 'practice') {
-            startNewTask();
-        }
     };
 
     const handleStartTest = () => {
         startTest();
-        startNewTask();
     };
 
     return (
-        <div className="container mx-auto p-4">
-            <div className="flex justify-between items-center mb-4">
+        <div className="container mx-auto p-4 space-y-4">
+            <div className="flex justify-between items-center">
                 <div className="space-x-2">
-                    <button 
-                        className={`px-4 py-2 rounded ${currentMode === 'practice' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+                    <Button 
+                        variant={currentMode === 'practice' ? 'default' : 'outline'}
                         onClick={() => handleModeSwitch('practice')}
                     >
                         Übungsmodus
-                    </button>
-                    <button 
-                        className={`px-4 py-2 rounded ${currentMode === 'test' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+                    </Button>
+                    <Button 
+                        variant={currentMode === 'test' ? 'default' : 'outline'}
                         onClick={() => handleModeSwitch('test')}
                     >
                         Testmodus
-                    </button>
+                    </Button>
                 </div>
-                {currentMode === 'test' && <Hearts />}
-            </div>
-
-            <div className="mb-4">
-                <Timer mode={currentMode} onTestEnd={endTest} />
-            </div>
-
-            <div className="mb-4 space-y-2">
-                <div className="flex space-x-4">
-                    <label className="flex items-center">
-                        <span className="mr-2">Maximale Zahl:</span>
-                        <input
-                            type="number"
-                            value={settings.maxNumber}
-                            onChange={(e) => setSettings({ maxNumber: parseInt(e.target.value, 10) })}
-                            className="border rounded px-2 py-1"
-                            min="1"
-                            max="99999"
-                        />
-                    </label>
-                    <label className="flex items-center">
-                        <span className="mr-2">Anzahl Zahlen:</span>
-                        <input
-                            type="number"
-                            value={settings.numberCount}
-                            onChange={(e) => setSettings({ numberCount: parseInt(e.target.value, 10) })}
-                            className="border rounded px-2 py-1"
-                            min="2"
-                            max="5"
-                        />
-                    </label>
-                    {currentMode === 'test' && (
-                        <label className="flex items-center">
-                            <span className="mr-2">Testdauer (Min):</span>
-                            <input
-                                type="number"
-                                value={settings.testDuration}
-                                onChange={(e) => setSettings({ testDuration: parseInt(e.target.value, 10) })}
-                                className="border rounded px-2 py-1"
-                                min="1"
-                                max="30"
-                            />
-                        </label>
-                    )}
-                </div>
-                <div className="flex justify-end">
-                    <button
-                        className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-                        onClick={() => {
-                            setCarries(Array(maxDigits).fill(''));
-                            setAnswer(Array(maxDigits).fill(''));
-                            startNewTask();
-                        }}
-                    >
-                        Neue Aufgabe
-                    </button>
-                </div>
-            </div>
-
-            {(!testStarted && currentMode === 'test') ? (
-                <button
-                    className="bg-green-500 text-white px-4 py-2 rounded"
-                    onClick={handleStartTest}
-                >
-                    Test starten
-                </button>
-            ) : (
-                <div className="calculation-area bg-white p-4 rounded shadow">
-                    <div className="numbers-row space-y-2">
-                        {currentNumbers.map((num, i) => (
-                            <div key={`number-${i}`} className="flex justify-end space-x-2">
-                                {i === currentNumbers.length - 1 && (
-                                    <div className="w-8 h-8 flex items-center justify-center">
-                                        +
+                <div className="flex items-center space-x-2">
+                    <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+                        <DialogTrigger asChild>
+                            <Button variant="outline" size="icon">
+                                <Settings className="h-4 w-4" />
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Einstellungen</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4 py-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="maxNumber">Maximale Zahl</Label>
+                                    <Input
+                                        id="maxNumber"
+                                        type="number"
+                                        value={settings.maxNumber}
+                                        onChange={(e: { target: { value: string; }; }) => setSettings({ maxNumber: parseInt(e.target.value) })}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="numberCount">Anzahl der Zahlen</Label>
+                                    <Input
+                                        id="numberCount"
+                                        type="number"
+                                        value={settings.numberCount}
+                                        onChange={(e: { target: { value: string; }; }) => setSettings({ numberCount: parseInt(e.target.value) })}
+                                    />
+                                </div>
+                                {currentMode === 'test' && (
+                                    <div className="space-y-2">
+                                        <Label htmlFor="testDuration">Testdauer (Minuten)</Label>
+                                        <Input
+                                            id="testDuration"
+                                            type="number"
+                                            value={settings.testDuration}
+                                            onChange={(e: { target: { value: string; }; }) => setSettings({ testDuration: parseInt(e.target.value) })}
+                                        />
                                     </div>
                                 )}
-                                {String(num).padStart(maxDigits, ' ').split('').map((digit, j) => (
-                                    <div key={`digit-${i}-${j}`} className="w-8 h-8 flex items-center justify-center">
-                                        {digit !== ' ' ? digit : ''}
-                                    </div>
-                                ))}
                             </div>
-                        ))}
-                        
-                        <div className="carries-row flex justify-end space-x-2">
-                            <div className="w-8 h-8 flex items-center justify-center">
-                                +
-                            </div>
-                            {carries.map((carry, index) => (
-                                <input
-                                    key={`carry-${index}`}
-                                    type="text"
-                                    value={carry}
-                                    onChange={(e) => handleCarryInput(index, e.target.value)}
-                                    className="w-8 h-8 text-center border rounded text-sm"
-                                    maxLength={1}
-                                />
+                        </DialogContent>
+                    </Dialog>
+                    
+                    {currentMode === 'test' && !testStarted && (
+                        <Button onClick={handleStartTest}>
+                            Test starten
+                        </Button>
+                    )}
+                </div>
+            </div>
+
+            {currentMode === 'test' && testStarted && (
+                <Timer mode={currentMode} onTestEnd={endTest} />
+            )}
+
+            <div className="calculation-area bg-white p-4 rounded-lg border shadow-sm space-y-4">
+                <div className="numbers-row space-y-2">
+                    {currentNumbers.map((num, i) => (
+                        <div key={`number-${i}`} className="flex justify-end space-x-2">
+                            {i === currentNumbers.length - 1 && (
+                                <div className="w-8 h-8 flex items-center justify-center">
+                                    +
+                                </div>
+                            )}
+                            {String(num).padStart(maxDigits, ' ').split('').map((digit, j) => (
+                                <div key={`digit-${i}-${j}`} className="w-8 h-8 flex items-center justify-center font-mono">
+                                    {digit !== ' ' ? digit : ''}
+                                </div>
                             ))}
                         </div>
-                    </div>
+                    ))}
                     
-                    <div className="border-t border-black my-2" />
-                    
-                    <div className="answer-row flex justify-end space-x-2">
-                        {answer.map((digit, index) => (
-                            <input
-                                key={`answer-${index}`}
-                                ref={el => answerRefs.current[index] = el}
+                    <div className="carries-row flex justify-end space-x-2">
+                        <div className="w-8 h-8 flex items-center justify-center">
+                            +
+                        </div>
+                        {carries.map((carry, index) => (
+                            <Input
+                                key={`carry-${index}`}
                                 type="text"
-                                value={digit}
-                                onChange={(e) => handleAnswerInput(index, e.target.value)}
-                                className="w-8 h-8 text-center border rounded"
+                                value={carry}
+                                onChange={(e: { target: { value: string; }; }) => handleCarryInput(index, e.target.value)}
+                                className="w-8 h-8 text-center p-0"
                                 maxLength={1}
                             />
                         ))}
                     </div>
+                </div>
+                
+                <Separator />
+                
+                <div className="answer-row flex justify-end space-x-2">
+                    {answer.map((digit, index) => (
+                        <Input
+                            key={`answer-${index}`}
+                            ref={(el: HTMLInputElement | null) => answerRefs.current[index] = el}
+                            type="text"
+                            value={digit}
+                            onChange={(e: { target: { value: string; }; }) => handleAnswerInput(index, e.target.value)}
+                            className="w-8 h-8 text-center p-0"
+                            maxLength={1}
+                        />
+                    ))}
+                </div>
+                
+                <div className="flex justify-between items-center">
+                    {currentMode === 'practice' && (
+                        <Button
+                            variant="outline"
+                            onClick={startNewTask}
+                        >
+                            Neue Aufgabe
+                        </Button>
+                    )}
                     
-                    <button
-                        className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
+                    <Button
                         onClick={handleCheck}
                         disabled={answer.some(digit => digit === '')}
                     >
                         Überprüfen
-                    </button>
-                    
-                    {feedback && (
-                        <div className={`mt-2 ${feedback.includes('Richtig') ? 'text-green-500' : 'text-red-500'}`}>
-                            {feedback}
-                        </div>
-                    )}
+                    </Button>
                 </div>
-            )}
+                
+                {feedback && (
+                    <div className={`text-center ${feedback.includes('Richtig') ? 'text-green-600' : 'text-red-600'}`}>
+                        {feedback}
+                    </div>
+                )}
+            </div>
 
             <History />
         </div>

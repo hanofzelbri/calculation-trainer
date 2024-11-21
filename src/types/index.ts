@@ -15,6 +15,9 @@ export interface GameState {
     score: number;
     taskStartTime: number | null;
     testStarted: boolean;
+    testStartTime: number | null;
+    correctAnswersInTest: number;
+    showResultPopup: boolean;
     history: HistoryEntry[];
 }
 

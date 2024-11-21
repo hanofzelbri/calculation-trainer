@@ -1,6 +1,5 @@
-import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { HistoryItem } from '../types';
+import { useGameStore } from '../store/gameStore';
 
 interface HistoryEntry {
   task: string;
@@ -9,11 +8,7 @@ interface HistoryEntry {
 }
 
 export const History = () => {
-  const [history, setHistory] = useState<HistoryEntry[]>([]);
-
-  const addToHistory = (entry: HistoryEntry) => {
-    setHistory(prev => [entry, ...prev].slice(0, 10)); // Keep last 10 entries
-  };
+  const history = useGameStore(state => state.history);
 
   return (
     <Card className="mt-4">
