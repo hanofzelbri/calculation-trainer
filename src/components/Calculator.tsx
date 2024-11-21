@@ -2,6 +2,8 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { Timer } from './Timer';
 import { History } from './History';
+import { Hearts } from './Hearts';
+import { TestResultsDialog } from './TestResultsDialog';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +18,7 @@ const Calculator: React.FC = () => {
         currentMode,
         testStarted,
         settings,
+        showResultPopup,
         setMode,
         setSettings,
         startNewTask,
@@ -78,26 +81,55 @@ const Calculator: React.FC = () => {
         startTest();
     };
 
+    const handleEndTest = () => {
+        endTest();
+    };
+
+    const handleCloseResults = () => {
+        setMode('practice');
+    };
+
+    const handleRestartTest = () => {
+        setMode('test');
+        startTest();
+    };
+
     return (
         <div className="container mx-auto p-4 space-y-4">
             <div className="flex justify-between items-center">
                 <div className="space-x-2">
-                    <Button
-                        variant={currentMode === 'practice' ? 'default' : 'outline'}
-                        onClick={() => handleModeSwitch('practice')}
-                    >
-                        Übungsmodus
-                    </Button>
-                    <Button
-                        variant={currentMode === 'test' ? 'default' : 'outline'}
-                        onClick={() => handleModeSwitch('test')}
-                    >
-                        Testmodus
-                    </Button>
+                    {testStarted ? (
+                        <Button 
+                            variant="destructive" 
+                            onClick={handleEndTest}
+                        >
+                            Test beenden
+                        </Button>
+                    ) : (
+                        <>
+                            <Button
+                                variant={currentMode === 'practice' ? 'default' : 'outline'}
+                                onClick={() => handleModeSwitch('practice')}
+                            >
+                                Übungsmodus
+                            </Button>
+                            <Button
+                                variant={currentMode === 'test' ? 'default' : 'outline'}
+                                onClick={() => handleModeSwitch('test')}
+                            >
+                                Testmodus
+                            </Button>
+                        </>
+                    )}
                 </div>
                 <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
                     <DialogTrigger asChild>
-                        <Button variant="outline" size="icon" type="button">
+                        <Button 
+                            variant="outline" 
+                            size="icon" 
+                            type="button"
+                            disabled={testStarted}
+                        >
                             <Settings className="h-4 w-4" />
                         </Button>
                     </DialogTrigger>
@@ -139,6 +171,7 @@ const Calculator: React.FC = () => {
                     </DialogContent>
                 </Dialog>
             </div>
+
             {currentMode === 'test' && !testStarted && (
                 <Button onClick={handleStartTest}>
                     Test starten
@@ -146,7 +179,10 @@ const Calculator: React.FC = () => {
             )}
 
             {currentMode === 'test' && testStarted && (
-                <Timer mode={currentMode} onTestEnd={endTest} />
+                <div className="flex justify-between items-center">
+                    <Hearts />
+                    <Timer mode={currentMode} onTestEnd={endTest} />
+                </div>
             )}
 
             {(currentMode === 'practice' || testStarted) && (
@@ -226,6 +262,10 @@ const Calculator: React.FC = () => {
             )}
 
             <History />
+            <TestResultsDialog 
+                onClose={handleCloseResults}
+                onRestart={handleRestartTest}
+            />
         </div>
     );
 };
