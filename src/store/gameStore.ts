@@ -16,10 +16,6 @@ interface GameStore extends GameState {
     addToHistory: (entry: HistoryEntry) => void;
 }
 
-const getRandomNumber = (max: number) => {
-    return Math.floor(Math.random() * max) + 1;
-};
-
 export const useGameStore = create<GameStore>((set, get) => ({
     // Initial state
     currentNumbers: [],
