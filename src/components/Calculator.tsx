@@ -138,91 +138,92 @@ const Calculator: React.FC = () => {
                         </div>
                     </DialogContent>
                 </Dialog>
-
-                {currentMode === 'test' && !testStarted && (
-                    <Button onClick={handleStartTest}>
-                        Test starten
-                    </Button>
-                )}
             </div>
+            {currentMode === 'test' && !testStarted && (
+                <Button onClick={handleStartTest}>
+                    Test starten
+                </Button>
+            )}
 
             {currentMode === 'test' && testStarted && (
                 <Timer mode={currentMode} onTestEnd={endTest} />
             )}
 
-            <div className="calculation-area bg-white p-4 rounded-lg border shadow-sm space-y-4">
-                <div className="numbers-row space-y-2">
-                    {currentNumbers.map((num, i) => (
-                        <div key={`number-${i}`} className="flex justify-end space-x-2">
-                            {i === currentNumbers.length - 1 && (
-                                <div className="w-8 h-8 flex items-center justify-center">
-                                    +
-                                </div>
-                            )}
-                            {String(num).padStart(maxDigits, ' ').split('').map((digit, j) => (
-                                <div key={`digit-${i}-${j}`} className="w-8 h-8 flex items-center justify-center font-mono">
-                                    {digit !== ' ' ? digit : ''}
-                                </div>
+            {(currentMode === 'practice' || testStarted) && (
+                <div className="calculation-area bg-white p-4 rounded-lg border shadow-sm space-y-4">
+                    <div className="numbers-row space-y-2">
+                        {currentNumbers.map((num, i) => (
+                            <div key={`number-${i}`} className="flex justify-end space-x-2">
+                                {i === currentNumbers.length - 1 && (
+                                    <div className="w-8 h-8 flex items-center justify-center">
+                                        +
+                                    </div>
+                                )}
+                                {String(num).padStart(maxDigits, ' ').split('').map((digit, j) => (
+                                    <div key={`digit-${i}-${j}`} className="w-8 h-8 flex items-center justify-center font-mono">
+                                        {digit !== ' ' ? digit : ''}
+                                    </div>
+                                ))}
+                            </div>
+                        ))}
+
+                        <div className="carries-row flex justify-end space-x-2">
+                            <div className="w-8 h-8 flex items-center justify-center">
+                                +
+                            </div>
+                            {carries.map((carry, index) => (
+                                <Input
+                                    key={`carry-${index}`}
+                                    type="text"
+                                    value={carry}
+                                    onChange={(e: { target: { value: string; }; }) => handleCarryInput(index, e.target.value)}
+                                    className="w-8 h-8 text-center p-0"
+                                    maxLength={1}
+                                />
                             ))}
                         </div>
-                    ))}
+                    </div>
 
-                    <div className="carries-row flex justify-end space-x-2">
-                        <div className="w-8 h-8 flex items-center justify-center">
-                            +
-                        </div>
-                        {carries.map((carry, index) => (
+                    <Separator />
+
+                    <div className="answer-row flex justify-end space-x-2">
+                        {answer.map((digit, index) => (
                             <Input
-                                key={`carry-${index}`}
+                                key={`answer-${index}`}
+                                ref={(el: HTMLInputElement | null) => answerRefs.current[index] = el}
                                 type="text"
-                                value={carry}
-                                onChange={(e: { target: { value: string; }; }) => handleCarryInput(index, e.target.value)}
+                                value={digit}
+                                onChange={(e: { target: { value: string; }; }) => handleAnswerInput(index, e.target.value)}
                                 className="w-8 h-8 text-center p-0"
                                 maxLength={1}
                             />
                         ))}
                     </div>
-                </div>
-
-                <Separator />
-
-                <div className="answer-row flex justify-end space-x-2">
-                    {answer.map((digit, index) => (
-                        <Input
-                            key={`answer-${index}`}
-                            ref={(el: HTMLInputElement | null) => answerRefs.current[index] = el}
-                            type="text"
-                            value={digit}
-                            onChange={(e: { target: { value: string; }; }) => handleAnswerInput(index, e.target.value)}
-                            className="w-8 h-8 text-center p-0"
-                            maxLength={1}
-                        />
-                    ))}
-                </div>
-                <div className="flex justify-end items-center">
-                    {currentMode === 'practice' && (
+                    <div className="flex justify-end items-center">
+                        {currentMode === 'practice' && (
+                            <Button
+                                variant="outline"
+                                onClick={startNewTask}
+                                className="mr-auto"
+                            >
+                                Neue Aufgabe
+                            </Button>
+                        )}
                         <Button
-                            variant="outline"
-                            onClick={startNewTask}
-                            className="mr-auto"
+                            onClick={handleCheck}
+                            disabled={answer.some(digit => digit === '')}
                         >
-                            Neue Aufgabe
+                            Überprüfen
                         </Button>
-                    )}
-                    <Button
-                        onClick={handleCheck}
-                        disabled={answer.some(digit => digit === '')}
-                    >
-                        Überprüfen
-                    </Button>
-                </div>
-
-                {feedback && (
-                    <div className={`text-center ${feedback.includes('Richtig') ? 'text-green-600' : 'text-red-600'}`}>
-                        {feedback}
                     </div>
-                )}
-            </div>
+
+                    {feedback && (
+                        <div className={`text-center ${feedback.includes('Richtig') ? 'text-green-600' : 'text-red-600'}`}>
+                            {feedback}
+                        </div>
+                    )}
+                </div>
+            )}
 
             <History />
         </div>
