@@ -18,7 +18,6 @@ const Calculator: React.FC = () => {
         currentMode,
         testStarted,
         settings,
-        showResultPopup,
         setMode,
         setSettings,
         startNewTask,
