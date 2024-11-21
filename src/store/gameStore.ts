@@ -188,7 +188,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         }
         return { 
             hearts: newHearts,
-            testStarted: newHearts > 0
+            ...(state.currentMode === 'test' && { testStarted: newHearts > 0 })
         };
     }),
     
