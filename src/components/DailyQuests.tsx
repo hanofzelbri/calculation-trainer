@@ -30,7 +30,7 @@ const QuestCard: React.FC<QuestCardProps> = ({ quest, onClaim }) => {
             <div className="w-full bg-gray-200 rounded-full h-2 sm:h-2.5 mb-4">
                 <div
                     className="bg-blue-600 h-2 sm:h-2.5 rounded-full"
-                    style={{ width: `${(quest.progress / quest.requirement) * 100}%` }}
+                    style={{ width: `${Math.min((quest.progress / quest.requirement) * 100, 100)}%` }}
                 ></div>
             </div>
             <p className="text-xs sm:text-sm text-gray-500 mb-4">
