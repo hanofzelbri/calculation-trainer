@@ -103,10 +103,15 @@ export const useStatisticsStore = create<StatisticsStore>()(
                     // Update global stats
                     stats.totalProblemsAllTime++;
                     stats.totalTimeSpentAllTime += timeSpent;
-                    stats.averageAccuracy = 
-                        Object.values(stats.operationStats).reduce((acc, curr) => 
+                    const operationsWithProblems = Object.values(stats.operationStats)
+                        .filter(curr => curr.totalProblems > 0);
+                    
+                    stats.averageAccuracy = operationsWithProblems.length > 0
+                        ? (operationsWithProblems.reduce((acc, curr) => 
                             acc + (curr.correctFirstTry / curr.totalProblems), 0) / 
-                        Object.keys(stats.operationStats).length;
+                            operationsWithProblems.length) * 100
+                        : 100;
+                    
                     stats.lastUpdated = new Date().toISOString();
 
                     return {
