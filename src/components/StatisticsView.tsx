@@ -21,9 +21,9 @@ const formatAccuracy = (correct: number, total: number): string => {
 };
 
 const StatCard = ({ title, value, description }: { title: string, value: string | number, description: string }) => (
-    <div className="text-center p-4">
-        <h3 className="text-4xl font-bold">{value}</h3>
-        <p className="text-sm text-muted-foreground">{description}</p>
+    <div className="text-center p-2 sm:p-4">
+        <h3 className="text-2xl sm:text-4xl font-bold">{value}</h3>
+        <p className="text-xs sm:text-sm text-muted-foreground">{description}</p>
     </div>
 );
 
@@ -32,11 +32,11 @@ const OperationStatsCard: React.FC<{ operation: Operation }> = ({ operation }) =
 
     return (
         <Card>
-            <CardHeader>
-                <h3 className="text-lg font-semibold">{operation}</h3>
+            <CardHeader className="p-4 sm:p-6">
+                <h3 className="text-base sm:text-lg font-semibold">{operation}</h3>
             </CardHeader>
-            <CardContent>
-                <div className="grid grid-cols-2 gap-4">
+            <CardContent className="p-4 sm:p-6">
+                <div className="grid grid-cols-2 gap-2 sm:gap-4">
                     <div className="text-sm text-muted-foreground">Gesamt Aufgaben:</div>
                     <div className="text-sm text-right">{stats.totalProblems}</div>
                     
@@ -95,21 +95,21 @@ export const StatisticsView: React.FC = () => {
     const { achievements } = useGameStore();
     
     return (
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
             <GlobalStats />
-            <Separator className="my-6" />
-            <div className="grid md:grid-cols-2 gap-6">
+            <Separator className="my-4 sm:my-6" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 {Object.values(Operation).map((operation) => (
                     <OperationStatsCard key={operation} operation={operation} />
                 ))}
             </div>
-            <Separator className="my-6" />
+            <Separator className="my-4 sm:my-6" />
             <Card>
-                <CardHeader>
+                <CardHeader className="p-4 sm:p-6">
                     <CardTitle>Errungenschaften</CardTitle>
                 </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <CardContent className="p-4 sm:p-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {achievements.map(achievement => {
                             const currentLevel = achievement.levels[achievement.currentLevel];
                             

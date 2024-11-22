@@ -21,36 +21,36 @@ const QuestCard: React.FC<QuestCardProps> = ({ quest, onClaim }) => {
     };
 
     return (
-        <div className="bg-white rounded-lg shadow-lg p-4">
-            <div className={`${difficultyColors[quest.difficulty]} text-white px-2 py-1 rounded-full text-sm inline-block mb-2`}>
+        <div className="bg-white rounded-lg shadow-lg p-3 sm:p-4">
+            <div className={`${difficultyColors[quest.difficulty]} text-white px-2 py-1 rounded-full text-xs sm:text-sm inline-block mb-2`}>
                 {difficultyNames[quest.difficulty]}
             </div>
-            <h3 className="text-xl font-bold mb-2">{quest.title}</h3>
-            <p className="text-gray-600 mb-4">{quest.description}</p>
-            <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+            <h3 className="text-lg sm:text-xl font-bold mb-2">{quest.title}</h3>
+            <p className="text-sm sm:text-base text-gray-600 mb-4">{quest.description}</p>
+            <div className="w-full bg-gray-200 rounded-full h-2 sm:h-2.5 mb-4">
                 <div
-                    className="bg-blue-600 h-2.5 rounded-full"
+                    className="bg-blue-600 h-2 sm:h-2.5 rounded-full"
                     style={{ width: `${(quest.progress / quest.requirement) * 100}%` }}
                 ></div>
             </div>
-            <p className="text-sm text-gray-500 mb-4">
+            <p className="text-xs sm:text-sm text-gray-500 mb-4">
                 Fortschritt: {quest.progress} / {quest.requirement}
             </p>
             {quest.completed && !quest.claimed ? (
                 <button
                     onClick={onClaim}
-                    className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors"
+                    className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-1.5 sm:py-2 px-3 sm:px-4 rounded-lg transition-colors text-sm sm:text-base"
                 >
                     Belohnung abholen ({quest.experienceReward} XP)
                 </button>
             ) : quest.claimed ? (
-                <div className="text-green-600 font-bold text-center py-2">
+                <div className="text-green-600 font-bold text-center py-1.5 sm:py-2 text-sm sm:text-base">
                     ✓ Abgeschlossen!
                 </div>
             ) : (
                 <button
                     disabled
-                    className="w-full bg-gray-300 text-gray-500 font-bold py-2 px-4 rounded-lg cursor-not-allowed"
+                    className="w-full bg-gray-300 text-gray-500 font-bold py-1.5 sm:py-2 px-3 sm:px-4 rounded-lg cursor-not-allowed text-sm sm:text-base"
                 >
                     Noch nicht abgeschlossen
                 </button>
@@ -63,7 +63,7 @@ const DailyQuests: React.FC = () => {
     const { quests, claimQuest } = useGameStore();
 
     return (
-        <div className="grid grid-cols-3 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4">
             {quests?.map((quest) => (
                 <QuestCard
                     key={quest.id}
