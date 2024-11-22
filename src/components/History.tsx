@@ -5,7 +5,6 @@ import { useState } from 'react';
 import { Operation } from '../types';
 import { Badge } from './ui/badge';
 import { ScrollArea } from './ui/scroll-area';
-import { Separator } from './ui/separator';
 
 const ITEMS_PER_PAGE = 10;
 

@@ -28,4 +28,5 @@ export interface Statistics {
     lastUpdated: string;
     currentStreak: number;
     bestStreak: number;
+    lastCorrectAnswer: string | null;
 }

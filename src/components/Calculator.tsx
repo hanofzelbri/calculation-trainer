@@ -14,11 +14,7 @@ const Calculator: React.FC = () => {
         currentTask
     } = useCalculatorStore();
 
-    const [carries, setCarries] = useState<string[]>([]);
-    const [answer, setAnswer] = useState<string[]>([]);
     const [feedback, setFeedback] = useState<string>('');
-    const [showFeedback, setShowFeedback] = useState(false);
-    const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
     const answerRefs = useRef<(HTMLInputElement | null)[]>([]);
     const carryRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -42,8 +38,6 @@ const Calculator: React.FC = () => {
     useEffect(() => {
         const maxResultLength = getMaxResultLength();
         // Übertrag hat jetzt genauso viele Stellen wie das Ergebnis
-        setCarries(Array(maxResultLength).fill(''));
-        setAnswer(Array(maxResultLength).fill(''));
         answerRefs.current = answerRefs.current.slice(0, maxResultLength);
         carryRefs.current = carryRefs.current.slice(0, maxResultLength);
 
@@ -64,10 +58,6 @@ const Calculator: React.FC = () => {
     const handleCarryInput = (index: number, value: string) => {
         if (!/^[0-9]?$/.test(value)) return; // Nur Zahlen erlauben
 
-        const newCarries = [...carries];
-        newCarries[index] = value;
-        setCarries(newCarries);
-
         if (value) {
             // Nach Eingabe eines Übertrags zum entsprechenden Ergebnisfeld springen
             answerRefs.current[index]?.focus();
@@ -76,10 +66,6 @@ const Calculator: React.FC = () => {
 
     const handleAnswerInput = (index: number, value: string) => {
         if (!/^[0-9]?$/.test(value)) return; // Nur Zahlen erlauben
-
-        const newAnswer = [...answer];
-        newAnswer[index] = value;
-        setAnswer(newAnswer);
 
         if (value) {
             // Nach Eingabe einer Zahl zum Übertragsfeld links davon springen
@@ -110,10 +96,10 @@ const Calculator: React.FC = () => {
         } else if (event.key === 'Backspace' && (event.target as HTMLInputElement).value === '') {
             event.preventDefault();
             
-            if (type === 'carry' && index < carries.length - 1) {
+            if (type === 'carry' && index < carryRefs.current.length - 1) {
                 // Vom Übertragsfeld zum Ergebnisfeld rechts davon
                 answerRefs.current[index + 1]?.focus();
-            } else if (type === 'answer' && index < answer.length - 1) {
+            } else if (type === 'answer' && index < answerRefs.current.length - 1) {
                 // Vom Ergebnisfeld zum Übertragsfeld rechts davon
                 carryRefs.current[index]?.focus();
             }
@@ -121,46 +107,28 @@ const Calculator: React.FC = () => {
     };
 
     const showFeedbackAnimation = (correct: boolean) => {
-        setIsCorrect(correct);
-        setShowFeedback(true);
-        setTimeout(() => setShowFeedback(false), 500);
+        setFeedback(correct ? 'Richtig' : 'Falsch');
     };
 
     const handleCheck = () => {
-        if (!isAnswerComplete()) return;
-
-        // Entferne führende Nullen und leere Stellen
-        const userAnswer = parseInt(answer.join(''), 10);
-        const result = checkAnswer(userAnswer);
+        const maxResultLength = getMaxResultLength();
+        const userAnswer = Array.from({ length: maxResultLength }, (_, i) => (document.querySelector(`#answer-${i}`) as HTMLInputElement).value).join('');
+        const result = checkAnswer(parseInt(userAnswer, 10));
         showFeedbackAnimation(result);
 
         if (result) {
             // Clear the input fields but don't start a new task - that will happen automatically after delay
-            const maxResultLength = getMaxResultLength();
-            setCarries(Array(maxResultLength).fill(''));
-            setAnswer(Array(maxResultLength).fill(''));
+            const inputs = document.querySelectorAll('input');
+            inputs.forEach((input) => input.value = '');
         } else {
             // Bei falscher Antwort: Fokus auf das letzte Feld setzen
-            const lastIndex = answer.length - 1;
+            const lastIndex = maxResultLength - 1;
             answerRefs.current[lastIndex]?.focus();
         }
     };
 
-    const isAnswerComplete = () => {
-        // Mindestens die letzte Stelle muss ausgefüllt sein
-        if (answer[answer.length - 1] === '') return false;
-        
-        // Wenn eine Stelle ausgefüllt ist, müssen alle Stellen rechts davon auch ausgefüllt sein
-        let foundDigit = false;
-        for (let i = 0; i < answer.length; i++) {
-            if (answer[i] !== '') foundDigit = true;
-            if (foundDigit && answer[i] === '') return false;
-        }
-        return true;
-    };
-
     return (
-        <div className={`container p-6 space-y-6 bg-white rounded-lg shadow-lg ${showFeedback ? (isCorrect ? 'feedback-correct' : 'feedback-incorrect') : ''} ${showFeedback ? 'feedback-animation' : ''}`}>
+        <div className={`container p-6 space-y-6 bg-white rounded-lg shadow-lg ${feedback ? (feedback === 'Richtig' ? 'feedback-correct' : 'feedback-incorrect') : ''} ${feedback ? 'feedback-animation' : ''}`}>
             <div className="calculation-area bg-white p-6 rounded-lg border shadow-lg space-y-6">
                 <div className="flex flex-col items-end space-y-4">
                     {currentNumbers.map((number, index) => (
@@ -186,19 +154,19 @@ const Calculator: React.FC = () => {
                             {currentOperation}
                         </div>
                         <div className="flex">
-                            {maxDigits > carries.length && (
+                            {maxDigits > carryRefs.current.length && (
                                 <div className="w-12 h-12 flex items-center justify-center font-mono" />
                             )}
-                            {carries.map((carry, index) => (
+                            {Array.from({ length: getMaxResultLength() }, (_, i) => (
                                 <Input
-                                    key={`carry-${index}`}
+                                    key={`carry-${i}`}
                                     type="text"
-                                    value={carry}
-                                    onChange={(e) => handleCarryInput(index, e.target.value)}
-                                    onKeyDown={(e) => handleKeyDown(e, 'carry', index)}
+                                    value=""
+                                    onChange={(e) => handleCarryInput(i, e.target.value)}
+                                    onKeyDown={(e) => handleKeyDown(e, 'carry', i)}
                                     className="w-12 h-12 text-center p-0 font-mono text-lg"
                                     maxLength={1}
-                                    ref={(el) => carryRefs.current[index] = el}
+                                    ref={(el) => carryRefs.current[i] = el}
                                     onClick={handleInputClick}
                                     inputMode="numeric"
                                     pattern="[0-9]*"
@@ -214,16 +182,16 @@ const Calculator: React.FC = () => {
                             =
                         </div>
                         <div className="flex">
-                            {answer.map((digit, index) => (
+                            {Array.from({ length: getMaxResultLength() }, (_, i) => (
                                 <Input
-                                    key={`answer-${index}`}
+                                    key={`answer-${i}`}
                                     type="text"
-                                    value={digit}
-                                    onChange={(e) => handleAnswerInput(index, e.target.value)}
-                                    onKeyDown={(e) => handleKeyDown(e, 'answer', index)}
+                                    value=""
+                                    onChange={(e) => handleAnswerInput(i, e.target.value)}
+                                    onKeyDown={(e) => handleKeyDown(e, 'answer', i)}
                                     className="w-12 h-12 text-center p-0 font-mono text-lg"
                                     maxLength={1}
-                                    ref={(el) => answerRefs.current[index] = el}
+                                    ref={(el) => answerRefs.current[i] = el}
                                     onClick={handleInputClick}
                                     inputMode="numeric"
                                     pattern="[0-9]*"
@@ -236,14 +204,14 @@ const Calculator: React.FC = () => {
                         <Button
                             onClick={handleCheck}
                             className="text-lg py-6 px-8"
-                            disabled={!isAnswerComplete()}
+                            disabled={false}
                         >
                             Überprüfen
                         </Button>
                     </div>
 
                     {feedback && (
-                        <div className={`text-center ${feedback.includes('Richtig') ? 'text-green-600' : 'text-red-600'} text-lg`}>
+                        <div className={`text-center ${feedback === 'Richtig' ? 'text-green-600' : 'text-red-600'} text-lg`}>
                             {feedback}
                         </div>
                     )}
