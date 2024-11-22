@@ -1,5 +1,12 @@
 export type GameMode = 'practice' | 'test';
 
+export enum Operation {
+    Addition = '+',
+    Subtraction = '-',
+    Multiplication = '*',
+    Division = '/'
+}
+
 export interface Settings {
     addition: {
         enabled: boolean;
@@ -21,7 +28,7 @@ export interface HistoryEntry {
     userAnswer: number;
     correctAnswer: number;
     correct: boolean;
-    operation: '+' | '-';
+    operation: Operation;
 }
 
 export interface GameState {
@@ -37,7 +44,7 @@ export interface GameState {
     correctAnswersInTest: number;
     showResultPopup: boolean;
     history: HistoryEntry[];
-    currentOperation: '+' | '-';
+    currentOperation: Operation;
 }
 
 export interface AchievementLevel {

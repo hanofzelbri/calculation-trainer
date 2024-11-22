@@ -1,4 +1,5 @@
 export type GameMode = 'practice' | 'test';
+export type Operation = '+' | '-';
 
 export interface HistoryEntry {
     task: string;
@@ -11,6 +12,7 @@ export interface GameState {
     correctAnswer: number;
     maxDigits: number;
     currentMode: GameMode;
+    currentOperation: Operation;
     hearts: number;
     score: number;
     taskStartTime: number | null;
@@ -19,7 +21,6 @@ export interface GameState {
     correctAnswersInTest: number;
     showResultPopup: boolean;
     history: HistoryEntry[];
-    currentOperation: '+' | '-';
 }
 
 export interface OperationSettings {

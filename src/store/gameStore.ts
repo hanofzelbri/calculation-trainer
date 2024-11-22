@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { GameState, GameMode, Settings, HistoryEntry, Achievement } from '../types';
+import { GameState, GameMode, Settings, HistoryEntry, Achievement, Operation } from '../types';
 import { defaultAchievements } from '../data/achievementData';
 import { createQuestSlice, QuestStore } from './questStore';
 import { useStatisticsStore } from './statisticsStore';
@@ -41,7 +41,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     showResultPopup: false,
     showSettings: false,
     history: JSON.parse(localStorage.getItem('gameHistory') || '[]'),
-    currentOperation: '+',
+    currentOperation: Operation.Addition,
     level: parseInt(localStorage.getItem('level') || '1'),
     experience: parseInt(localStorage.getItem('experience') || '0'),
     experienceToNextLevel: 100,
@@ -64,8 +64,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     // Actions
     setMode: (mode: GameMode) => {
-        set({ 
-            currentMode: mode, 
+        set({
+            currentMode: mode,
             testStarted: false,
             testStartTime: null,
             correctAnswersInTest: 0,
@@ -76,12 +76,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
             currentNumbers: [],
             taskStartTime: null
         });
-        
+
         if (mode === 'practice') {
             get().startNewTask();
         }
     },
-    
+
     setSettings: (newSettings: Partial<Settings>) => {
         set((state) => {
             const updatedSettings = { ...state.settings, ...newSettings };
@@ -89,26 +89,26 @@ export const useGameStore = create<GameStore>((set, get) => ({
             return { settings: updatedSettings };
         });
     },
-    
+
     startNewTask: () => {
         const { settings, currentMode, testStarted } = get();
-        
+
         // Don't start new task in test mode unless test has started
         if (currentMode === 'test' && !testStarted) {
             return;
         }
 
         // Select random operation from enabled operations
-        const operations: ('+' | '-')[] = [];
-        if (settings.addition.enabled) operations.push('+');
-        if (settings.subtraction.enabled) operations.push('-');
+        const operations: Operation[] = [];
+        if (settings.addition.enabled) operations.push(Operation.Addition);
+        if (settings.subtraction.enabled) operations.push(Operation.Subtraction);
         const operation = operations[Math.floor(Math.random() * operations.length)];
-        
+
         // Get the operation settings
-        const operationSettings = operation === '+' ? settings.addition : settings.subtraction;
-        
+        const operationSettings = operation === Operation.Addition ? settings.addition : settings.subtraction;
+
         let numbers;
-        if (operation === '-') {
+        if (operation === Operation.Subtraction) {
             // Generate first number
             const firstNumber = Math.floor(Math.random() * operationSettings.maxNumber) + 1;
             // Generate remaining numbers that are smaller than the first number
@@ -121,16 +121,16 @@ export const useGameStore = create<GameStore>((set, get) => ({
                 .fill(0)
                 .map(() => Math.floor(Math.random() * operationSettings.maxNumber) + 1);
         }
-        
-        const answer = operation === '+' 
+
+        const answer = operation === '+'
             ? numbers.reduce((sum, num) => sum + num, 0)
             : numbers.reduce((diff, num, idx) => idx === 0 ? num : diff - num, 0);
-            
+
         const maxDigits = Math.max(
             ...numbers.map(num => String(num).length),
             String(Math.abs(answer)).length
         );
-        
+
         set({
             currentNumbers: numbers,
             correctAnswer: answer,
@@ -143,7 +143,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         get().checkAchievements();
         get().checkQuestProgress();
     },
-    
+
     checkAnswer: (answer: number) => {
         const state = get();
         const correct = answer === state.correctAnswer;
@@ -151,8 +151,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
         const timeSpent = endTime - (state.taskStartTime || endTime);
 
         // Check if this is the first try for the current problem
-        const isFirstTryForCurrentProblem = state.history.length === 0 || 
-            !state.history.some(entry => 
+        const isFirstTryForCurrentProblem = state.history.length === 0 ||
+            !state.history.some(entry =>
                 entry.correctAnswer === state.correctAnswer && !entry.correct
             );
 
@@ -196,22 +196,22 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
         return correct;
     },
-    
+
     updateScore: (points: number) => set((state) => ({ score: state.score + points })),
-    
+
     resetHearts: () => set({ hearts: 3 }),
-    
+
     decreaseHeart: () => set((state) => {
         const newHearts = state.hearts - 1;
         if (newHearts <= 0 && state.currentMode === 'test') {
             get().endTest();
         }
-        return { 
+        return {
             hearts: newHearts,
             ...(state.currentMode === 'test' && { testStarted: newHearts > 0 })
         };
     }),
-    
+
     startTest: () => {
         set(() => ({
             testStarted: true,
@@ -231,7 +231,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         );
         set({ testStarted: false, showResultPopup: true });
     },
-    
+
     addToHistory: (entry: HistoryEntry) => {
         set((state) => ({
             history: [...state.history, entry]
@@ -241,12 +241,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
         get().checkQuestProgress();
         localStorage.setItem('gameHistory', JSON.stringify(get().history));
     },
-    
+
     addExperience: (exp: number) => {
         set((state) => {
             const newExperience = state.experience + exp;
             const experienceToNextLevel = state.level * 100;
-            
+
             if (newExperience >= experienceToNextLevel) {
                 return {
                     experience: newExperience - experienceToNextLevel,
@@ -254,22 +254,22 @@ export const useGameStore = create<GameStore>((set, get) => ({
                     experienceToNextLevel: (state.level + 1) * 100
                 };
             }
-            
+
             return {
                 experience: newExperience,
                 experienceToNextLevel
             };
         });
-        
+
         // Check achievements and quests after experience gain
         get().checkAchievements();
         get().checkQuestProgress();
-        
+
         // Save to localStorage
         localStorage.setItem('level', get().level.toString());
         localStorage.setItem('experience', get().experience.toString());
     },
-    
+
     checkAchievements: () => {
         const state = get();
         const achievements = [...state.achievements];
@@ -281,13 +281,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
             const achievement = achievements.find(a => a.id === id);
             if (achievement) {
                 achievement.progress = progress;
-                
+
                 // Find the next level that hasn't been reached yet
-                const nextLevel = achievement.levels.find(level => 
-                    level.level === achievement.currentLevel + 1 && 
+                const nextLevel = achievement.levels.find(level =>
+                    level.level === achievement.currentLevel + 1 &&
                     progress >= level.requirement
                 );
-                
+
                 if (nextLevel && achievement.currentLevel < achievement.maxLevel) {
                     achievement.currentLevel = nextLevel.level;
                     achievementsUpdated = true;

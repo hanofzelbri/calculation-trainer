@@ -1,12 +1,11 @@
 import React from 'react';
 import { useGameStore } from '../store/gameStore';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DailyQuest, DailyQuestDifficulty } from '../types/achievements';
-import { Separator } from './ui/separator';
 
 interface QuestItemProps {
     quest: DailyQuest;

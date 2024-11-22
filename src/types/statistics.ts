@@ -1,4 +1,4 @@
-import { Operation } from './calculations';
+import { Operation } from "@/types";
 
 export interface OperationStats {
     totalProblems: number;

@@ -88,7 +88,7 @@ export const Test: React.FC = () => {
         <div className="container p-6 space-y-6 bg-white rounded-lg shadow-lg">
             <div className="flex justify-between items-center gap-4 flex-wrap">
                 <Hearts />
-                <Timer onTestEnd={handleEndTest} />
+                <Timer mode="test" onTestEnd={handleEndTest} />
                 <Button
                     variant="destructive"
                     onClick={handleEndTest}

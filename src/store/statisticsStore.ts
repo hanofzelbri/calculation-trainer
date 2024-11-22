@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Statistics, OperationStats } from '../types/statistics';
-import { Operation } from '../types/calculations';
+import { Operation } from '@/types';
 
 const createInitialOperationStats = (): OperationStats => ({
     totalProblems: 0,
