@@ -21,22 +21,24 @@ export interface Settings {
 }
 
 export interface HistoryEntry {
-    timestamp: number;
-    taskStartTime: number;
+    operation: Operation;
     numbers: number[];
     userAnswer: number;
     correctAnswer: number;
-    correct: boolean;
-    operation: Operation;
+    timestamp: string;
+    duration: number;
+    isCorrect: boolean;
+    isFirstAttempt: boolean;
 }
 
 export interface GameState {
     currentNumbers: number[];
     correctAnswer: number;
     maxDigits: number;
-    currentMode: GameMode;
+    currentOperation: Operation;
     taskStartTime: number | null;
     showResultPopup: boolean;
     history: HistoryEntry[];
-    currentOperation: Operation;
+    settings: Settings;
+    isFirstAttempt: boolean;
 }

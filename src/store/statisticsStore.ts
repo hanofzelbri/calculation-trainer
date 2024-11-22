@@ -95,7 +95,16 @@ export const useStatisticsStore = create<StatisticsStore>()(
                     stats.totalProblemsAllTime++;
                     stats.totalTimeSpentAllTime += timeSpent;
                     stats.operationStats[operation] = opStats;
-                    stats.averageAccuracy = (stats.operationStats[operation].correctFirstTry / stats.operationStats[operation].totalProblems) * 100;
+
+                    // Calculate average accuracy across all operations
+                    let totalCorrectFirstTry = 0;
+                    let totalProblems = 0;
+                    Object.values(stats.operationStats).forEach(opStat => {
+                        totalCorrectFirstTry += opStat.correctFirstTry;
+                        totalProblems += opStat.totalProblems;
+                    });
+                    stats.averageAccuracy = totalProblems > 0 ? (totalCorrectFirstTry / totalProblems) * 100 : 0;
+                    
                     stats.lastUpdated = new Date().toISOString();
 
                     return { statistics: stats };

@@ -1,9 +1,20 @@
 import { create } from 'zustand';
 import { Operation, GameState, Settings } from '../types';
+import { useStatisticsStore } from './statisticsStore';
 
+// Load settings from localStorage or use initial settings
+const loadSettings = (): Settings => {
+    const savedSettings = localStorage.getItem('calculatorSettings');
+    return savedSettings ? JSON.parse(savedSettings) : initialSettings;
+};
 
+// Load history from localStorage or use empty array
+const loadHistory = (): GameState['history'] => {
+    const savedHistory = localStorage.getItem('calculatorHistory');
+    return savedHistory ? JSON.parse(savedHistory) : [];
+};
 
-const generateTaskUpdated = (operation: Operation, settings: Settings): { numbers: number[], correctAnswer: number } => {
+const generateTaskUpdated = (operation: Operation, settings: Settings): { numbers: number[], correctAnswer: number, maxDigits: number } => {
     let numbers: number[] = [];
     let correctAnswer = 0;
 
@@ -30,7 +41,13 @@ const generateTaskUpdated = (operation: Operation, settings: Settings): { number
             throw new Error(`Operation ${operation} not supported`);
     }
 
-    return { numbers, correctAnswer };
+    // Calculate maxDigits based on the largest possible number
+    const maxDigits = Math.max(
+        ...numbers.map(n => n.toString().length),
+        correctAnswer.toString().length
+    );
+
+    return { numbers, correctAnswer, maxDigits };
 };
 
 const getRandomOperation = (settings: Settings): Operation => {
@@ -51,6 +68,7 @@ interface CalculatorStore {
     taskStartTime: number | null;
     showResultPopup: boolean;
     settings: Settings;
+    isFirstAttempt: boolean;
     startNewTask: () => void;
     checkAnswer: (answer: number) => boolean;
     setSettings: (newSettings: Partial<Settings>) => void;
@@ -72,55 +90,78 @@ const initialSettings: Settings = {
 export const useCalculatorStore = create<CalculatorStore>((set, get) => ({
     currentNumbers: [],
     correctAnswer: 0,
-    maxDigits: 2,
+    maxDigits: 1,  // Start with 1 as default
     currentOperation: Operation.Addition,
-    history: [],
+    history: loadHistory(),
     taskStartTime: null,
     showResultPopup: false,
-    settings: initialSettings,
+    settings: loadSettings(),
+    isFirstAttempt: true,
 
     startNewTask: () => {
         const state = get();
         const newOperation = getRandomOperation(state.settings);
-        const { numbers, correctAnswer } = generateTaskUpdated(newOperation, state.settings);
+        const { numbers, correctAnswer, maxDigits } = generateTaskUpdated(newOperation, state.settings);
         set({
             currentOperation: newOperation,
             currentNumbers: numbers,
             correctAnswer,
+            maxDigits,
             taskStartTime: Date.now(),
-            showResultPopup: false
+            showResultPopup: false,
+            isFirstAttempt: true
         });
     },
 
     checkAnswer: (answer: number) => {
         const state = get();
         const isCorrect = answer === state.correctAnswer;
-        const taskEndTime = Date.now();
+        const endTime = Date.now();
+        const duration = state.taskStartTime ? endTime - state.taskStartTime : 0;
 
         const historyEntry = {
-            timestamp: taskEndTime,
-            taskStartTime: state.taskStartTime || taskEndTime,
+            operation: state.currentOperation,
             numbers: state.currentNumbers,
             userAnswer: answer,
             correctAnswer: state.correctAnswer,
-            correct: isCorrect,
-            operation: state.currentOperation
+            timestamp: new Date().toISOString(),
+            duration,
+            isCorrect,
+            isFirstAttempt: state.isFirstAttempt,
         };
 
-        set(state => ({
-            history: [...state.history, historyEntry],
-            showResultPopup: true
-        }));
+        const newHistory = [...state.history, historyEntry];
+        localStorage.setItem('calculatorHistory', JSON.stringify(newHistory));
+
+        // Record statistics
+        useStatisticsStore.getState().recordProblemAttempt(
+            state.currentOperation,
+            duration,
+            isCorrect,
+            state.isFirstAttempt,
+            isCorrect // isFinalAttempt is true when the answer is correct
+        );
+
+        if (isCorrect) {
+            set({ showResultPopup: true, history: newHistory });
+            setTimeout(() => {
+                get().startNewTask();
+            }, 1000);
+        } else {
+            set({ isFirstAttempt: false, history: newHistory });
+        }
 
         return isCorrect;
     },
 
     setSettings: (newSettings: Partial<Settings>) => {
-        set(state => ({
-            settings: {
-                ...state.settings,
-                ...newSettings
-            }
-        }));
-    }
+        const currentSettings = get().settings;
+        const updatedSettings = {
+            ...currentSettings,
+            addition: { ...currentSettings.addition, ...newSettings.addition },
+            subtraction: { ...currentSettings.subtraction, ...newSettings.subtraction },
+        };
+        localStorage.setItem('calculatorSettings', JSON.stringify(updatedSettings));
+        set({ settings: updatedSettings });
+    },
 }));
