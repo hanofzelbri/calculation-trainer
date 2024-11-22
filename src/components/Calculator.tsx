@@ -28,6 +28,10 @@ const Calculator: React.FC = () => {
             if (sum >= Math.pow(10, maxDigits)) {
                 return maxDigits + 1;
             }
+        } else if (currentOperation === '-') {
+            // Für Subtraktion: Bestimme die Anzahl der Stellen basierend auf der größten Zahl
+            const maxNumber = Math.max(...currentNumbers);
+            return maxNumber.toString().length;
         }
         return maxDigits;
     };
