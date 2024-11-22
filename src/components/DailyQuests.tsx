@@ -63,17 +63,14 @@ const DailyQuests: React.FC = () => {
     const { quests, claimQuest } = useGameStore();
 
     return (
-        <div className="p-4">
-            <h2 className="text-2xl font-bold mb-4">Tägliche Aufgaben</h2>
-            <div className="grid grid-cols-3 gap-4">
-                {quests?.map((quest) => (
-                    <QuestCard
-                        key={quest.id}
-                        quest={quest}
-                        onClaim={() => claimQuest(quest.id)}
-                    />
-                ))}
-            </div>
+        <div className="grid grid-cols-3 gap-4 mb-4">
+            {quests?.map((quest) => (
+                <QuestCard
+                    key={quest.id}
+                    quest={quest}
+                    onClaim={() => claimQuest(quest.id)}
+                />
+            ))}
         </div>
     );
 };
