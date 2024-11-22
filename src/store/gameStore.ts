@@ -51,11 +51,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
     settings: JSON.parse(localStorage.getItem('gameSettings') || 'null') || {
         addition: {
             enabled: true,
-            maxNumber: 100,
+            maxNumber: 10,
             numberCount: 2
         },
         subtraction: {
-            enabled: true,
+            enabled: false,
             maxNumber: 100,
             numberCount: 2
         },
@@ -150,15 +150,22 @@ export const useGameStore = create<GameStore>((set, get) => ({
         const endTime = Date.now();
         const timeSpent = endTime - (state.taskStartTime || endTime);
 
-        // Update statistics
-        useStatisticsStore.getState().recordProblemAttempt(
-            state.currentOperation,
-            timeSpent,
-            correct,
-            true // isFirstTry is always true in our current implementation
-        );
+        // Check if this is the first try for the current problem
+        const isFirstTryForCurrentProblem = state.history.length === 0 || 
+            !state.history.some(entry => 
+                entry.correctAnswer === state.correctAnswer && !entry.correct
+            );
 
+        // Update statistics only when the answer is correct
         if (correct) {
+            useStatisticsStore.getState().recordProblemAttempt(
+                state.currentOperation,
+                timeSpent,
+                correct,
+                isFirstTryForCurrentProblem, // isFirstTry - true only if no failed attempts exist for this problem
+                true // isFinalAttempt, true because it's correct
+            );
+
             state.addToHistory({
                 timestamp: endTime,
                 taskStartTime: state.taskStartTime || endTime,
@@ -172,6 +179,15 @@ export const useGameStore = create<GameStore>((set, get) => ({
             state.checkAchievements();
             state.checkQuestProgress();
         } else {
+            state.addToHistory({
+                timestamp: endTime,
+                taskStartTime: state.taskStartTime || endTime,
+                numbers: state.currentNumbers,
+                userAnswer: answer,
+                correctAnswer: state.correctAnswer,
+                correct,
+                operation: state.currentOperation
+            });
             state.decreaseHeart();
             // Also check achievements and quests on wrong answers
             state.checkAchievements();

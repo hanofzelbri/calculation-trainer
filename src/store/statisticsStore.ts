@@ -37,7 +37,8 @@ interface StatisticsStore {
         operation: Operation,
         timeSpent: number,
         isCorrect: boolean,
-        isFirstTry: boolean
+        isFirstTry: boolean,
+        isFinalAttempt: boolean
     ) => void;
     recordTestCompletion: (
         operation: Operation,
@@ -56,23 +57,27 @@ export const useStatisticsStore = create<StatisticsStore>()(
                 operation: Operation,
                 timeSpent: number,
                 isCorrect: boolean,
-                isFirstTry: boolean
+                isFirstTry: boolean,
+                isFinalAttempt: boolean
             ) => {
+                // Only update statistics when the problem is completed correctly
+                if (!isFinalAttempt) return;
+
                 set((state) => {
                     const stats = { ...state.statistics };
                     const opStats = { ...stats.operationStats[operation] };
 
                     // Update operation-specific stats
-                    opStats.totalProblems++;
+                    opStats.totalProblems++; // Count the problem when it's completed
+                    if (isFirstTry && isCorrect) {
+                        opStats.correctFirstTry++;
+                    }
                     opStats.totalTimeSpent += timeSpent;
                     opStats.averageTime = opStats.totalTimeSpent / opStats.totalProblems;
                     if (timeSpent < opStats.bestTime && isCorrect) {
                         opStats.bestTime = timeSpent;
                     }
-                    if (isFirstTry && isCorrect) {
-                        opStats.correctFirstTry++;
-                    }
-                    if (!isCorrect) {
+                    if (!isFirstTry) { // If it wasn't solved on first try, count it as an error
                         opStats.totalErrors++;
                     }
 
@@ -103,14 +108,23 @@ export const useStatisticsStore = create<StatisticsStore>()(
                     // Update global stats
                     stats.totalProblemsAllTime++;
                     stats.totalTimeSpentAllTime += timeSpent;
+
+                    // Calculate average accuracy only from operations that have been attempted
                     const operationsWithProblems = Object.values(stats.operationStats)
                         .filter(curr => curr.totalProblems > 0);
                     
-                    stats.averageAccuracy = operationsWithProblems.length > 0
-                        ? (operationsWithProblems.reduce((acc, curr) => 
-                            acc + (curr.correctFirstTry / curr.totalProblems), 0) / 
-                            operationsWithProblems.length) * 100
-                        : 100;
+                    if (operationsWithProblems.length > 0) {
+                        // Calculate total correct first tries and total problems across all operations
+                        const totalCorrectFirstTries = operationsWithProblems.reduce((acc, curr) => 
+                            acc + curr.correctFirstTry, 0);
+                        const totalProblems = operationsWithProblems.reduce((acc, curr) => 
+                            acc + curr.totalProblems, 0);
+                        
+                        // Calculate overall accuracy
+                        stats.averageAccuracy = (totalCorrectFirstTries / totalProblems) * 100;
+                    } else {
+                        stats.averageAccuracy = 100;
+                    }
                     
                     stats.lastUpdated = new Date().toISOString();
 

@@ -6,7 +6,6 @@ import { Label } from "@/components/ui/label";
 export const Settings: React.FC = () => {
     const {
         settings,
-        currentMode,
         setSettings,
     } = useGameStore();
 
