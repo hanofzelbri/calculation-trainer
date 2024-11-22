@@ -166,19 +166,15 @@ const Calculator: React.FC = () => {
                     {currentNumbers.map((number, index) => (
                         <div key={index} className="flex items-center">
                             <div className="w-12 h-12 flex items-center justify-center">
+                                {index > 0 ? currentOperation : ''}
                             </div>
                             <div className="flex">
                                 {Array.from({ length: maxDigits - String(number).length }, (_, i) => (
                                     <div key={i} className="w-12 h-12 flex items-center justify-center font-mono" />
                                 ))}
-                                {index > 0 && maxDigits - String(number).length === 0 && (
-                                    <div className="w-12 h-12 flex items-center justify-center font-mono">
-                                        {currentOperation}
-                                    </div>
-                                )}
-                                {String(number).split('').map((digit, digitIndex, digits) => (
+                                {String(number).split('').map((digit, digitIndex) => (
                                     <div key={digitIndex} className="w-12 h-12 flex items-center justify-center font-mono">
-                                        {index > 0 && digitIndex === 0 && digits.length < maxDigits ? currentOperation : digit}
+                                        {digit}
                                     </div>
                                 ))}
                             </div>
@@ -187,12 +183,11 @@ const Calculator: React.FC = () => {
 
                     <div className="flex items-center">
                         <div className="w-12 h-12 flex items-center justify-center">
+                            {currentOperation}
                         </div>
                         <div className="flex">
                             {maxDigits > carries.length && (
-                                <div className="w-12 h-12 flex items-center justify-center font-mono">
-                                    {currentOperation}
-                                </div>
+                                <div className="w-12 h-12 flex items-center justify-center font-mono" />
                             )}
                             {carries.map((carry, index) => (
                                 <Input
