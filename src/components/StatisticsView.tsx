@@ -1,6 +1,6 @@
 import React from 'react';
 import { useStatisticsStore } from '../store/statisticsStore';
-import { Card, CardContent, CardHeader } from "../components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Separator } from "../components/ui/separator";
 import { Operation } from '@/types';
 
@@ -13,10 +13,12 @@ const formatTime = (ms: number): string => {
 };
 
 const StatCard = ({ value, description }: { value: string | number, description: string }) => (
-    <div className="text-center p-2 sm:p-4">
-        <h3 className="text-2xl sm:text-4xl font-bold">{value}</h3>
-        <p className="text-xs sm:text-sm text-muted-foreground">{description}</p>
-    </div>
+    <Card className="text-center">
+        <CardContent className="pt-6">
+            <h3 className="text-2xl sm:text-4xl font-bold">{value}</h3>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">{description}</p>
+        </CardContent>
+    </Card>
 );
 
 const OperationStatsCard: React.FC<{ operation: Operation }> = ({ operation }) => {
@@ -68,61 +70,66 @@ const OperationStatsCard: React.FC<{ operation: Operation }> = ({ operation }) =
     );
 };
 
-const GlobalStats: React.FC = () => {
+const TotalStatistics: React.FC = () => {
+    const statistics = useStatisticsStore((state) => state.statistics);
+
+    return (
+        <Card className="col-span-1 sm:col-span-2">
+            <CardHeader>
+                <CardTitle>Gesamtstatistik</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <StatCard
+                        value={statistics.totalProblemsAllTime}
+                        description="Aufgaben gesamt" />
+                    <StatCard
+                        value={formatTime(statistics.totalTimeSpentAllTime)}
+                        description="Gesamtzeit" />
+                    <div className="space-y-2">
+                        <StatCard
+                            value={statistics.currentStreak}
+                            description="Aktuelle Streak" />
+                        <StatCard
+                            value={statistics.bestStreak}
+                            description="Beste Streak" />
+                    </div>
+                    <StatCard
+                        value={`${Math.round(statistics.averageAccuracy)}%`}
+                        description="Durchschnittliche Genauigkeit" />
+                </div>
+            </CardContent>
+        </Card>
+    );
+};
+
+const TodayStatistics: React.FC = () => {
     const statistics = useStatisticsStore((state) => state.statistics);
     const today = new Date().toISOString().split('T')[0];
     const todayStats = statistics.dailyStats.find(ds => ds.date === today);
-
-    const todayAccuracy = todayStats 
+    const todayAccuracy = todayStats
         ? Math.round((todayStats.correctFirstTry / todayStats.totalProblems) * 100) || 0
         : 0;
 
     return (
-        <Card>
+        <Card className="col-span-1 sm:col-span-2">
             <CardHeader>
-                <h3 className="text-lg font-semibold">Gesamtstatistik</h3>
+                <CardTitle>Heute</CardTitle>
             </CardHeader>
             <CardContent>
-                <div className="space-y-6">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <StatCard
-                            value={statistics.totalProblemsAllTime}
-                            description="Aufgaben gesamt" />
-                        <StatCard
-                            value={formatTime(statistics.totalTimeSpentAllTime)}
-                            description="Gesamtzeit" />
-                        <div className="space-y-2">
-                            <StatCard
-                                value={statistics.currentStreak}
-                                description="Aktuelle Streak" />
-                            <StatCard
-                                value={statistics.bestStreak}
-                                description="Beste Streak" />
-                        </div>
-                        <StatCard
-                            value={`${Math.round(statistics.averageAccuracy)}%`}
-                            description="Durchschnittliche Genauigkeit" />
-                    </div>
-                    
-                    <Separator />
-                    
-                    <div>
-                        <h4 className="text-md font-semibold mb-4">Heute</h4>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <StatCard
-                                value={todayStats?.totalProblems || 0}
-                                description="Aufgaben heute" />
-                            <StatCard
-                                value={formatTime(todayStats?.totalTimeSpent || 0)}
-                                description="Zeit heute" />
-                            <StatCard
-                                value={todayStats?.correctFirstTry || 0}
-                                description="Richtig beim ersten Versuch" />
-                            <StatCard
-                                value={`${todayAccuracy}%`}
-                                description="Genauigkeit heute" />
-                        </div>
-                    </div>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <StatCard
+                        value={todayStats?.totalProblems || 0}
+                        description="Aufgaben heute" />
+                    <StatCard
+                        value={formatTime(todayStats?.totalTimeSpent || 0)}
+                        description="Zeit heute" />
+                    <StatCard
+                        value={todayStats?.correctFirstTry || 0}
+                        description="Richtig beim ersten Versuch" />
+                    <StatCard
+                        value={`${todayAccuracy}%`}
+                        description="Genauigkeit heute" />
                 </div>
             </CardContent>
         </Card>
@@ -131,14 +138,12 @@ const GlobalStats: React.FC = () => {
 
 export const StatisticsView: React.FC = () => {
     return (
-        <div className="space-y-4 sm:space-y-6">
-            <GlobalStats />
-            <Separator className="my-4 sm:my-6" />
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                {Object.values(Operation).map((operation) => (
-                    <OperationStatsCard key={operation} operation={operation} />
-                ))}
-            </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            <TotalStatistics />
+            <TodayStatistics />
+            {Object.values(Operation).map((operation) => (
+                <OperationStatsCard key={operation} operation={operation} />
+            ))}
         </div>
     );
 };
