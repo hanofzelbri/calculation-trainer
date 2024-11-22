@@ -188,6 +188,11 @@ export const useCalculatorStore = create<CalculatorStore>((set, get) => ({
         };
         localStorage.setItem('calculatorSettings', JSON.stringify(updatedSettings));
         set({ settings: updatedSettings });
+        
+        // Start a new task with the updated settings
+        setTimeout(() => {
+            get().startNewTask();
+        }, 0);
     },
 
     setHistoryFilter: (filter: Partial<CalculatorStore['historyFilter']>) => {

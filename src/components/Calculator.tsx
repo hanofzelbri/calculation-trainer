@@ -166,15 +166,19 @@ const Calculator: React.FC = () => {
                     {currentNumbers.map((number, index) => (
                         <div key={index} className="flex items-center">
                             <div className="w-12 h-12 flex items-center justify-center">
-                                {/* Kein Operationszeichen mehr hier */}
                             </div>
                             <div className="flex">
                                 {Array.from({ length: maxDigits - String(number).length }, (_, i) => (
                                     <div key={i} className="w-12 h-12 flex items-center justify-center font-mono" />
                                 ))}
-                                {String(number).split('').map((digit, digitIndex) => (
+                                {index > 0 && maxDigits - String(number).length === 0 && (
+                                    <div className="w-12 h-12 flex items-center justify-center font-mono">
+                                        {currentOperation}
+                                    </div>
+                                )}
+                                {String(number).split('').map((digit, digitIndex, digits) => (
                                     <div key={digitIndex} className="w-12 h-12 flex items-center justify-center font-mono">
-                                        {digit}
+                                        {index > 0 && digitIndex === 0 && digits.length < maxDigits ? currentOperation : digit}
                                     </div>
                                 ))}
                             </div>
@@ -183,9 +187,13 @@ const Calculator: React.FC = () => {
 
                     <div className="flex items-center">
                         <div className="w-12 h-12 flex items-center justify-center">
-                            {currentOperation}
                         </div>
                         <div className="flex">
+                            {maxDigits > carries.length && (
+                                <div className="w-12 h-12 flex items-center justify-center font-mono">
+                                    {currentOperation}
+                                </div>
+                            )}
                             {carries.map((carry, index) => (
                                 <Input
                                     key={`carry-${index}`}
