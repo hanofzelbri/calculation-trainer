@@ -50,7 +50,7 @@ interface StatisticsStore {
 
 export const useStatisticsStore = create<StatisticsStore>()(
     persist(
-        (set, get) => ({
+        (set) => ({
             statistics: createInitialStats(),
 
             recordProblemAttempt: (

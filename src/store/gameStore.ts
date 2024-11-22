@@ -213,7 +213,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }),
     
     startTest: () => {
-        set((state) => ({
+        set(() => ({
             testStarted: true,
             testStartTime: Date.now(),
             correctAnswersInTest: 0,
@@ -273,6 +273,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     checkAchievements: () => {
         const state = get();
         const achievements = [...state.achievements];
+        const statistics = useStatisticsStore.getState().statistics;
         let achievementsUpdated = false;
 
         // Helper function to update achievement
@@ -294,74 +295,47 @@ export const useGameStore = create<GameStore>((set, get) => ({
             }
         };
 
-        // Check each achievement
-        const currentTime = new Date();
+        // Streak master - using statistics streak
+        updateAchievement('streak_master', statistics.currentStreak);
 
-        // Streak master - track consecutive correct answers
-        let currentStreak = 0;
-        for (let i = state.history.length - 1; i >= 0; i--) {
-            if (state.history[i].correct) {
-                currentStreak++;
-            } else {
-                break;
-            }
-        }
-        updateAchievement('streak_master', currentStreak);
+        // Daily warrior - using statistics streak
+        updateAchievement('daily_warrior', statistics.longestStreak);
 
-        // Daily warrior - track consecutive days of practice
-        const uniqueDays = new Set();
-        let lastDate: Date | null = null;
-        let consecutiveDays = 0;
-
-        // Sort history by date, newest first
-        const sortedHistory = [...state.history].sort((a, b) => b.timestamp - a.timestamp);
-        
-        for (const entry of sortedHistory) {
-            const entryDate = new Date(entry.timestamp);
-            const dateString = entryDate.toDateString();
-            
-            if (!uniqueDays.has(dateString)) {
-                uniqueDays.add(dateString);
-                
-                if (lastDate === null) {
-                    lastDate = entryDate;
-                    consecutiveDays = 1;
-                } else {
-                    const dayDiff = Math.floor((lastDate.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24));
-                    if (dayDiff === 1) {
-                        consecutiveDays++;
-                        lastDate = entryDate;
-                    } else {
-                        break;
-                    }
-                }
-            }
-        }
-        updateAchievement('daily_warrior', consecutiveDays);
-
-        // Time bender - track fast solutions (under 15 seconds)
-        const fastSolutions = state.history.filter(entry => 
-            entry.correct && entry.taskStartTime && 
-            (entry.timestamp - entry.taskStartTime) < 15000
-        ).length;
+        // Time bender - track fast solutions using statistics
+        const fastSolutions = Object.values(statistics.operationStats).reduce((total, stats) => {
+            // Count solutions that were faster than 15 seconds
+            const fastCount = stats.totalProblems * (stats.averageTime < 15000 ? 1 : 0);
+            return total + fastCount;
+        }, 0);
         updateAchievement('time_bender', fastSolutions);
 
-        // Daily solver - track tasks completed today
-        const dailyTaskCount = state.history.filter(entry => {
-            const entryDate = new Date(entry.timestamp);
-            return entry.correct && entryDate.toDateString() === currentTime.toDateString();
-        }).length;
+        // Daily solver - using daily stats
+        const today = new Date().toISOString().split('T')[0];
+        const todayStats = statistics.dailyStats.find(stats => stats.date.startsWith(today));
+        const dailyTaskCount = todayStats?.totalProblems || 0;
         updateAchievement('daily_solver', dailyTaskCount);
 
         // Total tasks completed (all time)
-        const totalTasks = state.history.filter(entry => entry.correct).length;
-        updateAchievement('total_tasks', totalTasks);
+        updateAchievement('total_tasks', statistics.totalProblemsAllTime);
 
-        // Big numbers - track tasks with numbers over 1000
+        // Big numbers - track tasks with numbers over 1000 (keeping existing logic since this is not tracked in statistics)
         const bigNumberTasks = state.history.filter(entry =>
             entry.correct && entry.numbers.some(num => Math.abs(num) > 1000)
         ).length;
         updateAchievement('big_numbers', bigNumberTasks);
+
+        // Accuracy master - new achievement based on statistics
+        const averageAccuracy = statistics.averageAccuracy;
+        updateAchievement('accuracy_master', averageAccuracy);
+
+        // Speed demon - new achievement based on best times
+        const bestTimes = Object.values(statistics.operationStats).reduce((total, stats) => {
+            return total + (stats.bestTime < 5000 ? 1 : 0); // Count operations where best time is under 5 seconds
+        }, 0);
+        updateAchievement('speed_demon', bestTimes);
+
+        // Test champion - based on completed tests
+        updateAchievement('test_champion', statistics.totalTestsCompleted);
 
         if (achievementsUpdated) {
             set({ achievements });

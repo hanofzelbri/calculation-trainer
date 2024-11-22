@@ -40,25 +40,6 @@ export const defaultAchievements: Achievement[] = [
         ]
     },
     {
-        id: 'number_wizard',
-        baseTitle: 'Zahlen-Zauberer',
-        currentLevel: 0,
-        maxLevel: 10,
-        progress: 0,
-        levels: [
-            { level: 1, name: 'Zahlen-Lehrling', description: 'Löse insgesamt 25 Aufgaben', requirement: 25 },
-            { level: 2, name: 'Zahlen-Geselle', description: 'Löse insgesamt 100 Aufgaben', requirement: 100 },
-            { level: 3, name: 'Zahlen-Künstler', description: 'Löse insgesamt 250 Aufgaben', requirement: 250 },
-            { level: 4, name: 'Zahlen-Virtuose', description: 'Löse insgesamt 500 Aufgaben', requirement: 500 },
-            { level: 5, name: 'Zahlen-Meister', description: 'Löse insgesamt 1.000 Aufgaben', requirement: 1000 },
-            { level: 6, name: 'Zahlen-Magier', description: 'Löse insgesamt 2.000 Aufgaben', requirement: 2000 },
-            { level: 7, name: 'Zahlen-Erzmagier', description: 'Löse insgesamt 3.500 Aufgaben', requirement: 3500 },
-            { level: 8, name: 'Zahlen-Archmagier', description: 'Löse insgesamt 5.000 Aufgaben', requirement: 5000 },
-            { level: 9, name: 'Zahlen-Großmeister', description: 'Löse insgesamt 7.500 Aufgaben', requirement: 7500 },
-            { level: 10, name: 'Zahlen-Erleuchtet', description: 'Löse insgesamt 10.000 Aufgaben', requirement: 10000 }
-        ]
-    },
-    {
         id: 'time_bender',
         baseTitle: 'Zeit-Beherrscher',
         currentLevel: 0,
@@ -78,41 +59,79 @@ export const defaultAchievements: Achievement[] = [
         ]
     },
     {
-        id: 'addition_master',
-        baseTitle: 'Additions-Meister',
+        id: 'total_tasks',
+        baseTitle: 'Aufgaben-Meister',
         currentLevel: 0,
         maxLevel: 10,
         progress: 0,
         levels: [
-            { level: 1, name: 'Additions-Neuling', description: 'Löse 10 Additions-Aufgaben', requirement: 10 },
-            { level: 2, name: 'Additions-Anfänger', description: 'Löse 25 Additions-Aufgaben', requirement: 25 },
-            { level: 3, name: 'Additions-Lehrling', description: 'Löse 50 Additions-Aufgaben', requirement: 50 },
-            { level: 4, name: 'Additions-Schüler', description: 'Löse 100 Additions-Aufgaben', requirement: 100 },
-            { level: 5, name: 'Additions-Kenner', description: 'Löse 200 Additions-Aufgaben', requirement: 200 },
-            { level: 6, name: 'Additions-Profi', description: 'Löse 350 Additions-Aufgaben', requirement: 350 },
-            { level: 7, name: 'Additions-Experte', description: 'Löse 500 Additions-Aufgaben', requirement: 500 },
-            { level: 8, name: 'Additions-Meister', description: 'Löse 750 Additions-Aufgaben', requirement: 750 },
-            { level: 9, name: 'Additions-Großmeister', description: 'Löse 1000 Additions-Aufgaben', requirement: 1000 },
-            { level: 10, name: 'Additions-Legende', description: 'Löse 1500 Additions-Aufgaben', requirement: 1500 }
+            { level: 1, name: 'Aufgaben-Starter', description: 'Löse insgesamt 50 Aufgaben', requirement: 50 },
+            { level: 2, name: 'Aufgaben-Amateur', description: 'Löse insgesamt 100 Aufgaben', requirement: 100 },
+            { level: 3, name: 'Aufgaben-Profi', description: 'Löse insgesamt 250 Aufgaben', requirement: 250 },
+            { level: 4, name: 'Aufgaben-Experte', description: 'Löse insgesamt 500 Aufgaben', requirement: 500 },
+            { level: 5, name: 'Aufgaben-Meister', description: 'Löse insgesamt 1000 Aufgaben', requirement: 1000 },
+            { level: 6, name: 'Aufgaben-Champion', description: 'Löse insgesamt 2000 Aufgaben', requirement: 2000 },
+            { level: 7, name: 'Aufgaben-Elite', description: 'Löse insgesamt 3500 Aufgaben', requirement: 3500 },
+            { level: 8, name: 'Aufgaben-Legende', description: 'Löse insgesamt 5000 Aufgaben', requirement: 5000 },
+            { level: 9, name: 'Aufgaben-Unsterblich', description: 'Löse insgesamt 7500 Aufgaben', requirement: 7500 },
+            { level: 10, name: 'Aufgaben-Gott', description: 'Löse insgesamt 10000 Aufgaben', requirement: 10000 }
         ]
     },
     {
-        id: 'subtraction_master',
-        baseTitle: 'Subtraktions-Meister',
+        id: 'accuracy_master',
+        baseTitle: 'Genauigkeits-Meister',
         currentLevel: 0,
         maxLevel: 10,
         progress: 0,
         levels: [
-            { level: 1, name: 'Subtraktions-Neuling', description: 'Löse 10 Subtraktions-Aufgaben', requirement: 10 },
-            { level: 2, name: 'Subtraktions-Anfänger', description: 'Löse 25 Subtraktions-Aufgaben', requirement: 25 },
-            { level: 3, name: 'Subtraktions-Lehrling', description: 'Löse 50 Subtraktions-Aufgaben', requirement: 50 },
-            { level: 4, name: 'Subtraktions-Schüler', description: 'Löse 100 Subtraktions-Aufgaben', requirement: 100 },
-            { level: 5, name: 'Subtraktions-Kenner', description: 'Löse 200 Subtraktions-Aufgaben', requirement: 200 },
-            { level: 6, name: 'Subtraktions-Profi', description: 'Löse 350 Subtraktions-Aufgaben', requirement: 350 },
-            { level: 7, name: 'Subtraktions-Experte', description: 'Löse 500 Subtraktions-Aufgaben', requirement: 500 },
-            { level: 8, name: 'Subtraktions-Meister', description: 'Löse 750 Subtraktions-Aufgaben', requirement: 750 },
-            { level: 9, name: 'Subtraktions-Großmeister', description: 'Löse 1000 Subtraktions-Aufgaben', requirement: 1000 },
-            { level: 10, name: 'Subtraktions-Legende', description: 'Löse 1500 Subtraktions-Aufgaben', requirement: 1500 }
+            { level: 1, name: 'Genauigkeits-Starter', description: 'Erreiche 60% Genauigkeit', requirement: 60 },
+            { level: 2, name: 'Genauigkeits-Amateur', description: 'Erreiche 70% Genauigkeit', requirement: 70 },
+            { level: 3, name: 'Genauigkeits-Profi', description: 'Erreiche 75% Genauigkeit', requirement: 75 },
+            { level: 4, name: 'Genauigkeits-Experte', description: 'Erreiche 80% Genauigkeit', requirement: 80 },
+            { level: 5, name: 'Genauigkeits-Meister', description: 'Erreiche 85% Genauigkeit', requirement: 85 },
+            { level: 6, name: 'Genauigkeits-Champion', description: 'Erreiche 90% Genauigkeit', requirement: 90 },
+            { level: 7, name: 'Genauigkeits-Elite', description: 'Erreiche 93% Genauigkeit', requirement: 93 },
+            { level: 8, name: 'Genauigkeits-Legende', description: 'Erreiche 95% Genauigkeit', requirement: 95 },
+            { level: 9, name: 'Genauigkeits-Unsterblich', description: 'Erreiche 97% Genauigkeit', requirement: 97 },
+            { level: 10, name: 'Genauigkeits-Gott', description: 'Erreiche 99% Genauigkeit', requirement: 99 }
+        ]
+    },
+    {
+        id: 'speed_demon',
+        baseTitle: 'Geschwindigkeits-Dämon',
+        currentLevel: 0,
+        maxLevel: 10,
+        progress: 0,
+        levels: [
+            { level: 1, name: 'Geschwindigkeits-Starter', description: 'Löse eine Aufgabe in unter 5 Sekunden', requirement: 1 },
+            { level: 2, name: 'Geschwindigkeits-Amateur', description: 'Löse 3 Aufgaben in unter 5 Sekunden', requirement: 3 },
+            { level: 3, name: 'Geschwindigkeits-Profi', description: 'Löse 5 Aufgaben in unter 5 Sekunden', requirement: 5 },
+            { level: 4, name: 'Geschwindigkeits-Experte', description: 'Löse 10 Aufgaben in unter 5 Sekunden', requirement: 10 },
+            { level: 5, name: 'Geschwindigkeits-Meister', description: 'Löse 15 Aufgaben in unter 5 Sekunden', requirement: 15 },
+            { level: 6, name: 'Geschwindigkeits-Champion', description: 'Löse 20 Aufgaben in unter 5 Sekunden', requirement: 20 },
+            { level: 7, name: 'Geschwindigkeits-Elite', description: 'Löse 25 Aufgaben in unter 5 Sekunden', requirement: 25 },
+            { level: 8, name: 'Geschwindigkeits-Legende', description: 'Löse 30 Aufgaben in unter 5 Sekunden', requirement: 30 },
+            { level: 9, name: 'Geschwindigkeits-Unsterblich', description: 'Löse 35 Aufgaben in unter 5 Sekunden', requirement: 35 },
+            { level: 10, name: 'Geschwindigkeits-Gott', description: 'Löse 40 Aufgaben in unter 5 Sekunden', requirement: 40 }
+        ]
+    },
+    {
+        id: 'test_champion',
+        baseTitle: 'Test-Champion',
+        currentLevel: 0,
+        maxLevel: 10,
+        progress: 0,
+        levels: [
+            { level: 1, name: 'Test-Starter', description: 'Schließe 1 Test ab', requirement: 1 },
+            { level: 2, name: 'Test-Amateur', description: 'Schließe 3 Tests ab', requirement: 3 },
+            { level: 3, name: 'Test-Profi', description: 'Schließe 5 Tests ab', requirement: 5 },
+            { level: 4, name: 'Test-Experte', description: 'Schließe 10 Tests ab', requirement: 10 },
+            { level: 5, name: 'Test-Meister', description: 'Schließe 15 Tests ab', requirement: 15 },
+            { level: 6, name: 'Test-Champion', description: 'Schließe 20 Tests ab', requirement: 20 },
+            { level: 7, name: 'Test-Elite', description: 'Schließe 30 Tests ab', requirement: 30 },
+            { level: 8, name: 'Test-Legende', description: 'Schließe 40 Tests ab', requirement: 40 },
+            { level: 9, name: 'Test-Unsterblich', description: 'Schließe 50 Tests ab', requirement: 50 },
+            { level: 10, name: 'Test-Gott', description: 'Schließe 75 Tests ab', requirement: 75 }
         ]
     }
 ];

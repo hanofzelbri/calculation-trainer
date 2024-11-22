@@ -1,11 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useGameStore } from '../store/gameStore';
-import { Timer } from './Timer';
-import { Hearts } from './Hearts';
-import { TestResultsDialog } from './TestResultsDialog';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 
 const Calculator: React.FC = () => {
