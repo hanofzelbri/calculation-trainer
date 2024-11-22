@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useGameStore } from '../store/gameStore';
+import { useCalculatorStore } from '../store/calculatorStore';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
@@ -11,7 +11,7 @@ const Calculator: React.FC = () => {
         currentOperation,
         startNewTask,
         checkAnswer
-    } = useGameStore();
+    } = useCalculatorStore();
 
     const [carries, setCarries] = useState<string[]>([]);
     const [answer, setAnswer] = useState<string[]>([]);

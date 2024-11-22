@@ -1,5 +1,5 @@
 import React from 'react';
-import { useGameStore } from '../store/gameStore';
+import { useCalculatorStore } from '../store/calculatorStore';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -7,7 +7,7 @@ export const Settings: React.FC = () => {
     const {
         settings,
         setSettings,
-    } = useGameStore();
+    } = useCalculatorStore();
 
     const handleSettingsChange = (newSettings: Partial<typeof settings>) => {
         setSettings(newSettings);

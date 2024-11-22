@@ -1,6 +1,5 @@
 import React from 'react';
 import { useStatisticsStore } from '../store/statisticsStore';
-import { useGameStore } from '../store/gameStore';
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Separator } from "../components/ui/separator";
 import { Progress } from "@/components/ui/progress";
@@ -90,8 +89,6 @@ const GlobalStats: React.FC = () => {
 };
 
 export const StatisticsView: React.FC = () => {
-    const { achievements } = useGameStore();
-
     return (
         <div className="space-y-4 sm:space-y-6">
             <GlobalStats />
@@ -101,66 +98,6 @@ export const StatisticsView: React.FC = () => {
                     <OperationStatsCard key={operation} operation={operation} />
                 ))}
             </div>
-            <Separator className="my-4 sm:my-6" />
-            <Card>
-                <CardHeader className="p-4 sm:p-6">
-                    <CardTitle>Errungenschaften</CardTitle>
-                </CardHeader>
-                <CardContent className="p-4 sm:p-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {achievements.map(achievement => {
-                            const currentLevel = achievement.levels[achievement.currentLevel];
-
-                            // Calculate current level progress
-                            const prevLevel = achievement.levels[achievement.currentLevel - 1];
-                            const currentLevelProgress = prevLevel
-                                ? ((achievement.progress - prevLevel.requirement) / (currentLevel.requirement - prevLevel.requirement)) * 100
-                                : (achievement.progress / currentLevel.requirement) * 100;
-
-                            // Calculate current level progress values
-                            const currentProgress = prevLevel
-                                ? (achievement.progress - prevLevel.requirement)
-                                : achievement.progress;
-                            const levelRequirement = currentLevel
-                                ? (currentLevel.requirement - (prevLevel ? prevLevel.requirement : 0))
-                                : 'Max';
-
-                            return (
-                                <Card key={achievement.id} className="transition-colors">
-                                    <CardContent className="p-4">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <h4 className="font-semibold">{achievement.baseTitle}</h4>
-                                            <Badge variant="secondary">
-                                                Level {achievement.currentLevel}
-                                            </Badge>
-                                        </div>
-                                        {currentLevel && (
-                                            <>
-                                                <p className="text-sm text-muted-foreground mb-2">
-                                                    {currentLevel.name}
-                                                </p>
-                                                <p className="text-sm text-muted-foreground mb-4">
-                                                    {currentLevel.description}
-                                                </p>
-                                            </>
-                                        )}
-                                        <div>
-                                            <Progress
-                                                value={currentLevelProgress}
-                                                className="h-2 mb-1"
-                                            />
-                                            <div className="flex justify-between text-sm text-muted-foreground">
-                                                <span>{currentProgress}</span>
-                                                <span>{levelRequirement}</span>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            );
-                        })}
-                    </div>
-                </CardContent>
-            </Card>
         </div>
     );
 };

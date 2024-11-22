@@ -35,36 +35,8 @@ export interface GameState {
     correctAnswer: number;
     maxDigits: number;
     currentMode: GameMode;
-    hearts: number;
-    score: number;
     taskStartTime: number | null;
     showResultPopup: boolean;
     history: HistoryEntry[];
     currentOperation: Operation;
-}
-
-export interface AchievementLevel {
-    level: number;
-    name: string;
-    description: string;
-    requirement: number;
-}
-
-export interface Achievement {
-    id: string;
-    baseTitle: string;
-    currentLevel: number;
-    maxLevel: number;
-    progress: number;
-    levels: AchievementLevel[];
-}
-
-export interface DailyQuest {
-    id: string;
-    title: string;
-    description: string;
-    requirement: number;
-    progress: number;
-    completed: boolean;
-    reward: number;
 }

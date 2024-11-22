@@ -21,8 +21,6 @@ export interface Statistics {
     totalTimeSpentAllTime: number;
     operationStats: Record<Operation, OperationStats>;
     dailyStats: DailyStats[];
-    currentStreak: number;
-    longestStreak: number;
     averageAccuracy: number;
     lastUpdated: string;
 }
