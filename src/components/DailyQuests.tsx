@@ -28,8 +28,8 @@ const QuestCard: React.FC<QuestCardProps> = ({ quest, onClaim }) => {
             <h3 className="text-xl font-bold mb-2">{quest.title}</h3>
             <p className="text-gray-600 mb-4">{quest.description}</p>
             <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4">
-                <div 
-                    className="bg-blue-600 h-2.5 rounded-full" 
+                <div
+                    className="bg-blue-600 h-2.5 rounded-full"
                     style={{ width: `${(quest.progress / quest.requirement) * 100}%` }}
                 ></div>
             </div>

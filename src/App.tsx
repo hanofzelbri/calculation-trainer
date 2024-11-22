@@ -1,7 +1,11 @@
 import React from 'react';
-import Calculator from '@/components/Calculator';
+import Calculator from './components/Calculator';
 import { GameProgress } from './components/GameProgress';
 import DailyQuests from './components/DailyQuests';
+import { StatisticsView } from './components/StatisticsView';
+import Settings from './components/Settings';
+import { Test } from './components/Test';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
 import './App.css';
 
 const App: React.FC = () => {
@@ -10,7 +14,26 @@ const App: React.FC = () => {
       <div className="container mx-auto max-w-2xl">
         <GameProgress />
         <DailyQuests />
-        <Calculator />
+        <Tabs defaultValue="practice" className="w-full">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="practice">Üben</TabsTrigger>
+            <TabsTrigger value="test">Test</TabsTrigger>
+            <TabsTrigger value="statistics">Statistiken</TabsTrigger>
+            <TabsTrigger value="settings">Einstellungen</TabsTrigger>
+          </TabsList>
+          <TabsContent value="practice">
+            <Calculator />
+          </TabsContent>
+          <TabsContent value="test">
+            <Test />
+          </TabsContent>
+          <TabsContent value="statistics">
+            <StatisticsView />
+          </TabsContent>
+          <TabsContent value="settings">
+            <Settings />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

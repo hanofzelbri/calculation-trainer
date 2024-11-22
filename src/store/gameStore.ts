@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { GameState, GameMode, Settings, HistoryEntry, Achievement } from '../types';
 import { defaultAchievements } from '../data/achievementData';
 import { createQuestSlice, QuestStore } from './questStore';
+import { useStatisticsStore } from './statisticsStore';
 
 interface GameStore extends GameState, QuestStore {
     level: number;
@@ -147,6 +148,15 @@ export const useGameStore = create<GameStore>((set, get) => ({
         const state = get();
         const correct = answer === state.correctAnswer;
         const endTime = Date.now();
+        const timeSpent = endTime - (state.taskStartTime || endTime);
+
+        // Update statistics
+        useStatisticsStore.getState().recordProblemAttempt(
+            state.currentOperation,
+            timeSpent,
+            correct,
+            true // isFirstTry is always true in our current implementation
+        );
 
         if (correct) {
             state.addToHistory({
@@ -187,26 +197,24 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }),
     
     startTest: () => {
-        const testStartTime = Date.now();
-        set({ 
-            testStarted: true, 
-            testStartTime,
-            showSettings: false,
-            correctAnswersInTest: 0
-        });
+        set((state) => ({
+            testStarted: true,
+            testStartTime: Date.now(),
+            correctAnswersInTest: 0,
+            showSettings: false
+        }));
         get().startNewTask();
-        
-        // End test after specified duration
-        setTimeout(() => {
-            get().endTest();
-        }, get().settings.testDuration * 60 * 1000);
     },
-    
-    endTest: () => set(() => ({ 
-        testStarted: false,
-        showResultPopup: true,
-        testStartTime: null
-    })),
+
+    endTest: () => {
+        const state = get();
+        // Record test completion in statistics
+        useStatisticsStore.getState().recordTestCompletion(
+            state.currentOperation,
+            state.settings.testDuration * 2 // Assuming 2 problems per minute
+        );
+        set({ testStarted: false, showResultPopup: true });
+    },
     
     addToHistory: (entry: HistoryEntry) => {
         set((state) => ({

@@ -1,83 +1,51 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { Timer } from './Timer';
-import { History } from './History';
 import { Hearts } from './Hearts';
+import { History } from './History';
 import { TestResultsDialog } from './TestResultsDialog';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 
-const Calculator: React.FC = () => {
+export const Test: React.FC = () => {
     const {
         currentNumbers,
         maxDigits,
+        testStarted,
         currentOperation,
-        startNewTask,
+        startTest,
+        endTest,
         checkAnswer
     } = useGameStore();
 
     const [carries, setCarries] = useState<string[]>([]);
     const [answer, setAnswer] = useState<string[]>([]);
     const [feedback, setFeedback] = useState<string>('');
-    const answerRefs = useRef<(HTMLInputElement | null)[]>([]);
-    const carryRefs = useRef<(HTMLInputElement | null)[]>([]);
+    const [showResults, setShowResults] = useState(false);
 
-    useEffect(() => {
+    const handleStartTest = () => {
+        startTest();
         setCarries(Array(maxDigits).fill(''));
         setAnswer(Array(maxDigits).fill(''));
-        answerRefs.current = answerRefs.current.slice(0, maxDigits);
-        carryRefs.current = carryRefs.current.slice(0, maxDigits);
+        setFeedback('');
+    };
 
-        // Focus on the rightmost result field when a new task starts
-        if (answerRefs.current.length > 0) {
-            answerRefs.current[maxDigits - 1]?.focus();
-        }
-    }, [maxDigits, currentNumbers]);
-
-    useEffect(() => {
-        startNewTask();
-    }, []);
+    const handleEndTest = () => {
+        endTest();
+        setShowResults(true);
+    };
 
     const handleCarryInput = (index: number, value: string) => {
         const newCarries = [...carries];
         newCarries[index] = value;
         setCarries(newCarries);
-
-        if (value) {
-            // After entering a carry, focus the corresponding result field
-            answerRefs.current[index]?.focus();
-        }
     };
 
     const handleAnswerInput = (index: number, value: string) => {
         const newAnswer = [...answer];
         newAnswer[index] = value;
         setAnswer(newAnswer);
-
-        if (value) {
-            // After entering a result, focus the carry field to the left
-            if (index > 0) {
-                carryRefs.current[index - 1]?.focus();
-            }
-        }
-    };
-
-    const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>, type: 'carry' | 'answer', index: number) => {
-        if (event.key === 'Tab') {
-            event.preventDefault();
-
-            if (type === 'carry') {
-                // From carry field, go to corresponding result field
-                answerRefs.current[index]?.focus();
-            } else if (type === 'answer') {
-                // From result field, go to carry field to the left
-                if (index > 0) {
-                    carryRefs.current[index - 1]?.focus();
-                }
-            }
-        }
     };
 
     const isAnswerComplete = () => {
@@ -93,15 +61,44 @@ const Calculator: React.FC = () => {
         setFeedback(isCorrect ? 'Richtig!' : 'Falsch, versuche es noch einmal.');
 
         if (isCorrect) {
-            startNewTask();
             setCarries(Array(maxDigits).fill(''));
             setAnswer(Array(maxDigits).fill(''));
-            answerRefs.current[0]?.focus();
         }
     };
 
+    const handleCloseResults = () => {
+        setShowResults(false);
+    };
+
+    const handleRestartTest = () => {
+        setShowResults(false);
+        handleStartTest();
+    };
+
+    if (!testStarted) {
+        return (
+            <div className="container p-6 space-y-6 bg-white rounded-lg shadow-lg">
+                <Button onClick={handleStartTest} className="text-lg py-6 px-8">
+                    Test starten
+                </Button>
+            </div>
+        );
+    }
+
     return (
         <div className="container p-6 space-y-6 bg-white rounded-lg shadow-lg">
+            <div className="flex justify-between items-center gap-4 flex-wrap">
+                <Hearts />
+                <Timer onTestEnd={handleEndTest} />
+                <Button
+                    variant="destructive"
+                    onClick={handleEndTest}
+                    className="text-lg py-6 px-8"
+                >
+                    Test beenden
+                </Button>
+            </div>
+
             <div className="calculation-area bg-white p-6 rounded-lg border shadow-lg space-y-6">
                 <div className="flex flex-col items-end space-y-4">
                     {currentNumbers.map((number, index) => (
@@ -133,10 +130,8 @@ const Calculator: React.FC = () => {
                                     type="text"
                                     value={carry}
                                     onChange={(e) => handleCarryInput(index, e.target.value)}
-                                    onKeyDown={(e) => handleKeyDown(e, 'carry', index)}
                                     className="w-12 h-12 text-center p-0 font-mono text-lg"
                                     maxLength={1}
-                                    ref={(el) => carryRefs.current[index] = el}
                                     inputMode="numeric"
                                     pattern="[0-9]*"
                                 />
@@ -157,10 +152,8 @@ const Calculator: React.FC = () => {
                                     type="text"
                                     value={digit}
                                     onChange={(e) => handleAnswerInput(index, e.target.value)}
-                                    onKeyDown={(e) => handleKeyDown(e, 'answer', index)}
                                     className="w-12 h-12 text-center p-0 font-mono text-lg"
                                     maxLength={1}
-                                    ref={(el) => answerRefs.current[index] = el}
                                     inputMode="numeric"
                                     pattern="[0-9]*"
                                 />
@@ -187,8 +180,12 @@ const Calculator: React.FC = () => {
             </div>
 
             <History />
+            {showResults && (
+                <TestResultsDialog
+                    onClose={handleCloseResults}
+                    onRestart={handleRestartTest}
+                />
+            )}
         </div>
     );
 };
-
-export default Calculator;
