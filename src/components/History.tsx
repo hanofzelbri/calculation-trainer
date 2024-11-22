@@ -53,31 +53,31 @@ export const History = () => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 w-full max-w-[95vw] sm:max-w-[90vw] md:max-w-[80vw] lg:max-w-[1000px] mx-auto">
       <Card>
         <CardHeader>
-          <CardTitle>Verlauf</CardTitle>
+          <CardTitle className="text-xl sm:text-2xl text-center sm:text-left">Verlauf</CardTitle>
           <div className="flex flex-col gap-4">
             {/* Attempt Type Filter */}
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
               <Button
                 variant={historyFilter.showFirstAttempts ? "default" : "outline"}
                 onClick={() => handleFilterChange({ showFirstAttempts: !historyFilter.showFirstAttempts })}
-                className="text-sm"
+                className="text-xs sm:text-sm"
               >
                 Erster Versuch
               </Button>
               <Button
                 variant={historyFilter.showMultipleAttempts ? "default" : "outline"}
                 onClick={() => handleFilterChange({ showMultipleAttempts: !historyFilter.showMultipleAttempts })}
-                className="text-sm"
+                className="text-xs sm:text-sm"
               >
                 Mehrere Versuche
               </Button>
             </div>
             
             {/* Operator Filter */}
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
               {Object.values(Operation).map((op) => (
                 <Button
                   key={op}
@@ -88,7 +88,7 @@ export const History = () => {
                       : [...historyFilter.operations, op];
                     handleFilterChange({ operations: newOperations });
                   }}
-                  className="text-sm"
+                  className="text-xs sm:text-sm"
                 >
                   {op}
                 </Button>
@@ -97,7 +97,7 @@ export const History = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <ScrollArea className="h-[500px] pr-4">
+          <ScrollArea className="h-[60vh] sm:h-[70vh] pr-4">
             <div className="space-y-4">
               {currentGroups.map((group) => {
                 const lastEntry = group[group.length - 1];
