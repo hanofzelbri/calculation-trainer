@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { Timer } from './Timer';
 import { Hearts } from './Hearts';
-import { History } from './History';
 import { TestResultsDialog } from './TestResultsDialog';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -179,7 +178,6 @@ export const Test: React.FC = () => {
                 </div>
             </div>
 
-            <History />
             {showResults && (
                 <TestResultsDialog
                     onClose={handleCloseResults}

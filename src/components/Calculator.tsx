@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { Timer } from './Timer';
-import { History } from './History';
 import { Hearts } from './Hearts';
 import { TestResultsDialog } from './TestResultsDialog';
 import { Button } from "@/components/ui/button";
@@ -185,8 +184,6 @@ const Calculator: React.FC = () => {
                     )}
                 </div>
             </div>
-
-            <History />
         </div>
     );
 };
