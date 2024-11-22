@@ -7,7 +7,6 @@ import Settings from './components/Settings';
 import { Test } from './components/Test';
 import { History } from './components/History';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
-import './App.css';
 
 const App: React.FC = () => {
   return (
