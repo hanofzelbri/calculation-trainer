@@ -1,7 +1,6 @@
 import React from 'react';
 import { useStatisticsStore } from '../store/statisticsStore';
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
-import { Separator } from "../components/ui/separator";
 import { Operation } from '@/types';
 
 const formatTime = (ms: number): string => {
