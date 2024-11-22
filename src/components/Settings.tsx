@@ -106,16 +106,6 @@ export const Settings: React.FC = () => {
                     </div>
                 </div>
             </div>
-            <div className="space-y-4">
-                <Label htmlFor="testDuration" className="text-lg">Testdauer (Minuten)</Label>
-                <Input
-                    id="testDuration"
-                    type="number"
-                    value={settings.testDuration}
-                    onChange={(e) => handleSettingsChange({ testDuration: parseInt(e.target.value) })}
-                    className="mt-2 text-lg p-6"
-                />
-            </div>
         </div>
     );
 };

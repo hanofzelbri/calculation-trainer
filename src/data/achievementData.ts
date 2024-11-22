@@ -114,24 +114,5 @@ export const defaultAchievements: Achievement[] = [
             { level: 9, name: 'Geschwindigkeits-Unsterblich', description: 'Löse 35 Aufgaben in unter 5 Sekunden', requirement: 35 },
             { level: 10, name: 'Geschwindigkeits-Gott', description: 'Löse 40 Aufgaben in unter 5 Sekunden', requirement: 40 }
         ]
-    },
-    {
-        id: 'test_champion',
-        baseTitle: 'Test-Champion',
-        currentLevel: 0,
-        maxLevel: 10,
-        progress: 0,
-        levels: [
-            { level: 1, name: 'Test-Starter', description: 'Schließe 1 Test ab', requirement: 1 },
-            { level: 2, name: 'Test-Amateur', description: 'Schließe 3 Tests ab', requirement: 3 },
-            { level: 3, name: 'Test-Profi', description: 'Schließe 5 Tests ab', requirement: 5 },
-            { level: 4, name: 'Test-Experte', description: 'Schließe 10 Tests ab', requirement: 10 },
-            { level: 5, name: 'Test-Meister', description: 'Schließe 15 Tests ab', requirement: 15 },
-            { level: 6, name: 'Test-Champion', description: 'Schließe 20 Tests ab', requirement: 20 },
-            { level: 7, name: 'Test-Elite', description: 'Schließe 30 Tests ab', requirement: 30 },
-            { level: 8, name: 'Test-Legende', description: 'Schließe 40 Tests ab', requirement: 40 },
-            { level: 9, name: 'Test-Unsterblich', description: 'Schließe 50 Tests ab', requirement: 50 },
-            { level: 10, name: 'Test-Gott', description: 'Schließe 75 Tests ab', requirement: 75 }
-        ]
     }
 ];

@@ -18,8 +18,6 @@ interface GameStore extends GameState, QuestStore {
     updateScore: (points: number) => void;
     resetHearts: () => void;
     decreaseHeart: () => void;
-    startTest: () => void;
-    endTest: () => void;
     addToHistory: (entry: HistoryEntry) => void;
     addExperience: (exp: number) => void;
     checkAchievements: () => void;
@@ -35,9 +33,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
     hearts: 3,
     score: 0,
     taskStartTime: null,
-    testStarted: false,
-    testStartTime: null,
-    correctAnswersInTest: 0,
     showResultPopup: false,
     showSettings: false,
     history: JSON.parse(localStorage.getItem('gameHistory') || '[]'),
@@ -58,28 +53,21 @@ export const useGameStore = create<GameStore>((set, get) => ({
             enabled: false,
             maxNumber: 100,
             numberCount: 2
-        },
-        testDuration: 5
+        }
     },
 
     // Actions
     setMode: (mode: GameMode) => {
         set({
             currentMode: mode,
-            testStarted: false,
-            testStartTime: null,
-            correctAnswersInTest: 0,
             showResultPopup: false,
-            showSettings: mode === 'test',
+            showSettings: false,
             hearts: 3,
             score: 0,
             currentNumbers: [],
             taskStartTime: null
         });
-
-        if (mode === 'practice') {
-            get().startNewTask();
-        }
+        get().startNewTask();
     },
 
     setSettings: (newSettings: Partial<Settings>) => {
@@ -91,12 +79,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     },
 
     startNewTask: () => {
-        const { settings, currentMode, testStarted } = get();
-
-        // Don't start new task in test mode unless test has started
-        if (currentMode === 'test' && !testStarted) {
-            return;
-        }
+        const { settings } = get();
 
         // Select random operation from enabled operations
         const operations: Operation[] = [];
@@ -136,7 +119,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
             correctAnswer: answer,
             maxDigits,
             currentOperation: operation,
-            taskStartTime: (currentMode === 'practice' || (currentMode === 'test' && testStarted)) ? Date.now() : null,
+            taskStartTime: Date.now()
         });
 
         // Check achievements and quests when starting new task
@@ -201,36 +184,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     resetHearts: () => set({ hearts: 3 }),
 
-    decreaseHeart: () => set((state) => {
-        const newHearts = state.hearts - 1;
-        if (newHearts <= 0 && state.currentMode === 'test') {
-            get().endTest();
-        }
-        return {
-            hearts: newHearts,
-            ...(state.currentMode === 'test' && { testStarted: newHearts > 0 })
-        };
-    }),
-
-    startTest: () => {
-        set(() => ({
-            testStarted: true,
-            testStartTime: Date.now(),
-            correctAnswersInTest: 0,
-            showSettings: false
-        }));
-        get().startNewTask();
-    },
-
-    endTest: () => {
-        const state = get();
-        // Record test completion in statistics
-        useStatisticsStore.getState().recordTestCompletion(
-            state.currentOperation,
-            state.settings.testDuration * 2 // Assuming 2 problems per minute
-        );
-        set({ testStarted: false, showResultPopup: true });
-    },
+    decreaseHeart: () => set((state) => ({ hearts: state.hearts - 1 })),
 
     addToHistory: (entry: HistoryEntry) => {
         set((state) => ({
@@ -333,9 +287,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
             return total + (stats.bestTime < 5000 ? 1 : 0); // Count operations where best time is under 5 seconds
         }, 0);
         updateAchievement('speed_demon', bestTimes);
-
-        // Test champion - based on completed tests
-        updateAchievement('test_champion', statistics.totalTestsCompleted);
 
         if (achievementsUpdated) {
             set({ achievements });

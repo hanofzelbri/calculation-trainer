@@ -4,7 +4,6 @@ import { GameProgress } from './components/GameProgress';
 import DailyQuests from './components/DailyQuests';
 import { StatisticsView } from './components/StatisticsView';
 import Settings from './components/Settings';
-import { Test } from './components/Test';
 import { History } from './components/History';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
 
@@ -15,9 +14,8 @@ const App: React.FC = () => {
         <GameProgress />
         <DailyQuests />
         <Tabs defaultValue="practice" className="w-full mt-4">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 gap-2 mb-32 sm:mb-4">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 gap-2 mb-32 sm:mb-4">
             <TabsTrigger className="h-12 sm:h-10 px-2 py-2 text-sm sm:text-base whitespace-normal sm:whitespace-nowrap" value="practice">Üben</TabsTrigger>
-            <TabsTrigger className="h-12 sm:h-10 px-2 py-2 text-sm sm:text-base whitespace-normal sm:whitespace-nowrap" value="test">Test</TabsTrigger>
             <TabsTrigger className="h-12 sm:h-10 px-2 py-2 text-sm sm:text-base whitespace-normal sm:whitespace-nowrap" value="history">Verlauf</TabsTrigger>
             <TabsTrigger className="h-12 sm:h-10 px-2 py-2 text-sm sm:text-base whitespace-normal sm:whitespace-nowrap" value="statistics">Statistiken</TabsTrigger>
             <TabsTrigger className="h-12 sm:h-10 px-2 py-2 text-sm sm:text-base whitespace-normal sm:whitespace-nowrap" value="settings">Einstellungen</TabsTrigger>
@@ -25,9 +23,6 @@ const App: React.FC = () => {
           <div>
             <TabsContent value="practice">
               <Calculator />
-            </TabsContent>
-            <TabsContent value="test">
-              <Test />
             </TabsContent>
             <TabsContent value="history">
               <History />

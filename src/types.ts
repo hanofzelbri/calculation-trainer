@@ -1,4 +1,4 @@
-export type GameMode = 'practice' | 'test';
+export type GameMode = 'practice';
 
 export enum Operation {
     Addition = '+',
@@ -18,7 +18,6 @@ export interface Settings {
         maxNumber: number;
         numberCount: number;
     };
-    testDuration: number;
 }
 
 export interface HistoryEntry {
@@ -39,9 +38,6 @@ export interface GameState {
     hearts: number;
     score: number;
     taskStartTime: number | null;
-    testStarted: boolean;
-    testStartTime: number | null;
-    correctAnswersInTest: number;
     showResultPopup: boolean;
     history: HistoryEntry[];
     currentOperation: Operation;

@@ -7,8 +7,6 @@ export interface OperationStats {
     totalTimeSpent: number; // in milliseconds
     averageTime: number; // in milliseconds
     bestTime: number; // in milliseconds
-    testsCompleted: number;
-    problemsInTests: number;
 }
 
 export interface DailyStats {
@@ -25,7 +23,6 @@ export interface Statistics {
     dailyStats: DailyStats[];
     currentStreak: number;
     longestStreak: number;
-    totalTestsCompleted: number;
     averageAccuracy: number;
     lastUpdated: string;
 }

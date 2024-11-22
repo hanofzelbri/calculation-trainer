@@ -15,11 +15,6 @@ const formatTime = (ms: number): string => {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
 };
 
-const formatAccuracy = (correct: number, total: number): string => {
-    if (total === 0) return '0%';
-    return `${Math.round((correct / total) * 100)}%`;
-};
-
 const StatCard = ({ value, description }: { value: string | number, description: string }) => (
     <div className="text-center p-2 sm:p-4">
         <h3 className="text-2xl sm:text-4xl font-bold">{value}</h3>
@@ -36,23 +31,30 @@ const OperationStatsCard: React.FC<{ operation: Operation }> = ({ operation }) =
                 <h3 className="text-base sm:text-lg font-semibold">{operation}</h3>
             </CardHeader>
             <CardContent className="p-4 sm:p-6">
-                <div className="grid grid-cols-2 gap-2 sm:gap-4">
-                    <div className="text-sm text-muted-foreground">Gesamt Aufgaben:</div>
+                <div className="grid grid-cols-3 gap-4 mb-4">
+                    <div className="text-sm">Gesamt</div>
                     <div className="text-sm text-right">{stats.totalProblems}</div>
-
-                    <div className="text-sm text-muted-foreground">Erste Versuch richtig:</div>
-                    <div className="text-sm text-right">
-                        {formatAccuracy(stats.correctFirstTry, stats.totalProblems)}
-                    </div>
-
-                    <div className="text-sm text-muted-foreground">Durchschnittszeit:</div>
-                    <div className="text-sm text-right">{formatTime(stats.averageTime)}</div>
-
-                    <div className="text-sm text-muted-foreground">Beste Zeit:</div>
-                    <div className="text-sm text-right">{formatTime(stats.bestTime)}</div>
-
-                    <div className="text-sm text-muted-foreground">Tests abgeschlossen:</div>
-                    <div className="text-sm text-right">{stats.testsCompleted}</div>
+                    <div className="text-sm text-right">{Math.round((stats.correctFirstTry / stats.totalProblems) * 100 || 0)}%</div>
+                </div>
+                <div className="grid grid-cols-3 gap-4 mb-4">
+                    <div className="text-sm">Beim ersten Versuch</div>
+                    <div className="text-sm text-right">{stats.correctFirstTry}</div>
+                    <div className="text-sm text-right">{Math.round((stats.correctFirstTry / stats.totalProblems) * 100 || 0)}%</div>
+                </div>
+                <div className="grid grid-cols-3 gap-4 mb-4">
+                    <div className="text-sm">Fehler</div>
+                    <div className="text-sm text-right">{stats.totalErrors}</div>
+                    <div className="text-sm text-right">{Math.round((stats.totalErrors / stats.totalProblems) * 100 || 0)}%</div>
+                </div>
+                <div className="grid grid-cols-3 gap-4 mb-4">
+                    <div className="text-sm">Durchschnittszeit</div>
+                    <div className="text-sm text-right">{Math.round(stats.averageTime / 1000)}s</div>
+                    <div className="text-sm text-right"></div>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                    <div className="text-sm">Bestzeit</div>
+                    <div className="text-sm text-right">{stats.bestTime === Infinity ? '-' : `${Math.round(stats.bestTime / 1000)}s`}</div>
+                    <div className="text-sm text-right"></div>
                 </div>
             </CardContent>
         </Card>

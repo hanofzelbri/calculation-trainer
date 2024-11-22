@@ -10,8 +10,6 @@ const createInitialOperationStats = (): OperationStats => ({
     totalTimeSpent: 0,
     averageTime: 0,
     bestTime: Infinity,
-    testsCompleted: 0,
-    problemsInTests: 0,
 });
 
 const createInitialStats = (): Statistics => ({
@@ -26,7 +24,6 @@ const createInitialStats = (): Statistics => ({
     dailyStats: [],
     currentStreak: 0,
     longestStreak: 0,
-    totalTestsCompleted: 0,
     averageAccuracy: 0,
     lastUpdated: new Date().toISOString(),
 });
@@ -39,10 +36,6 @@ interface StatisticsStore {
         isCorrect: boolean,
         isFirstTry: boolean,
         isFinalAttempt: boolean
-    ) => void;
-    recordTestCompletion: (
-        operation: Operation,
-        problemCount: number
     ) => void;
     updateStreak: () => void;
     resetStatistics: () => void;
@@ -136,27 +129,6 @@ export const useStatisticsStore = create<StatisticsStore>()(
                                 [operation]: opStats,
                             },
                             dailyStats,
-                        },
-                    };
-                });
-            },
-
-            recordTestCompletion: (operation: Operation, problemCount: number) => {
-                set((state) => {
-                    const stats = { ...state.statistics };
-                    const opStats = { ...stats.operationStats[operation] };
-
-                    opStats.testsCompleted++;
-                    opStats.problemsInTests += problemCount;
-                    stats.totalTestsCompleted++;
-
-                    return {
-                        statistics: {
-                            ...stats,
-                            operationStats: {
-                                ...stats.operationStats,
-                                [operation]: opStats,
-                            },
                         },
                     };
                 });
