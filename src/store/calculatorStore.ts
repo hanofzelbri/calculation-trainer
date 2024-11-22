@@ -1,67 +1,33 @@
 import { create } from 'zustand';
 import { Operation, GameState, Settings } from '../types';
-import { getRandomNumber, getRandomNumberForAddition } from '@/utils/math';
 
-const generateTask = (operation: Operation, maxDigits: number): { numbers: number[], correctAnswer: number } => {
+
+
+const generateTaskUpdated = (operation: Operation, settings: Settings): { numbers: number[], correctAnswer: number } => {
     let numbers: number[] = [];
     let correctAnswer = 0;
 
-    switch (operation) {
-        case Operation.Addition:
-            const firstNumber = getRandomNumberForAddition(maxDigits);
-            const secondNumber = getRandomNumberForAddition(maxDigits, firstNumber);
-            numbers = [firstNumber, secondNumber];
-            correctAnswer = firstNumber + secondNumber;
-            break;
-        case Operation.Subtraction:
-            numbers = Array(2).fill(0).map(() => getRandomNumber(maxDigits));
-            correctAnswer = numbers[0] - numbers[1];
-            break;
-        case Operation.Multiplication:
-            numbers = Array(2).fill(0).map(() => getRandomNumber(maxDigits));
-            correctAnswer = numbers[0] * numbers[1];
-            break;
-        case Operation.Division:
-            numbers = Array(2).fill(0).map(() => getRandomNumber(maxDigits));
-            correctAnswer = numbers[0] / numbers[1];
-            break;
-    }
-
-    return { numbers, correctAnswer };
-};
-
-const generateSubtractionNumbers = (maxDigits: number): [number, number] => {
-    const max = Math.pow(10, maxDigits) - 1;
-    const firstNumber = getRandomNumber(maxDigits);
-    // Ensure second number is smaller than first number to get positive result
-    const secondNumber = Math.floor(Math.random() * firstNumber);
-    return [firstNumber, secondNumber];
-};
-
-const generateTaskUpdated = (operation: Operation, maxDigits: number): { numbers: number[], correctAnswer: number } => {
-    let numbers: number[] = [];
-    let correctAnswer = 0;
+    const operationSettings = operation === Operation.Addition ? settings.addition : settings.subtraction;
+    const maxNumber = operationSettings.maxNumber;
+    const numberCount = operationSettings.numberCount;
 
     switch (operation) {
         case Operation.Addition:
-            const firstNumber = getRandomNumberForAddition(maxDigits);
-            const secondNumber = getRandomNumberForAddition(maxDigits, firstNumber);
-            numbers = [firstNumber, secondNumber];
-            correctAnswer = firstNumber + secondNumber;
+            numbers = Array(numberCount).fill(0).map(() => Math.floor(Math.random() * (maxNumber + 1)));
+            correctAnswer = numbers.reduce((sum, num) => sum + num, 0);
             break;
         case Operation.Subtraction:
-            const [minuend, subtrahend] = generateSubtractionNumbers(maxDigits);
-            numbers = [minuend, subtrahend];
-            correctAnswer = minuend - subtrahend;
+            // For subtraction, ensure first number is largest to avoid negative results
+            const firstNumber = Math.floor(Math.random() * (maxNumber + 1));
+            const remainingNumbers = Array(numberCount - 1)
+                .fill(0)
+                .map(() => Math.floor(Math.random() * (firstNumber + 1)));
+            numbers = [firstNumber, ...remainingNumbers];
+            correctAnswer = numbers.reduce((result, num, index) => 
+                index === 0 ? num : result - num, 0);
             break;
-        case Operation.Multiplication:
-            numbers = Array(2).fill(0).map(() => getRandomNumber(maxDigits));
-            correctAnswer = numbers[0] * numbers[1];
-            break;
-        case Operation.Division:
-            numbers = Array(2).fill(0).map(() => getRandomNumber(maxDigits));
-            correctAnswer = numbers[0] / numbers[1];
-            break;
+        default:
+            throw new Error(`Operation ${operation} not supported`);
     }
 
     return { numbers, correctAnswer };
@@ -116,7 +82,7 @@ export const useCalculatorStore = create<CalculatorStore>((set, get) => ({
     startNewTask: () => {
         const state = get();
         const newOperation = getRandomOperation(state.settings);
-        const { numbers, correctAnswer } = generateTaskUpdated(newOperation, state.maxDigits);
+        const { numbers, correctAnswer } = generateTaskUpdated(newOperation, state.settings);
         set({
             currentOperation: newOperation,
             currentNumbers: numbers,
