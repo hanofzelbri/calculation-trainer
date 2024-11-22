@@ -19,40 +19,60 @@ const Calculator: React.FC = () => {
     const answerRefs = useRef<(HTMLInputElement | null)[]>([]);
     const carryRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-    useEffect(() => {
-        setCarries(Array(maxDigits).fill(''));
-        setAnswer(Array(maxDigits).fill(''));
-        answerRefs.current = answerRefs.current.slice(0, maxDigits);
-        carryRefs.current = carryRefs.current.slice(0, maxDigits);
-
-        // Focus on the rightmost result field when a new task starts
-        if (answerRefs.current.length > 0) {
-            answerRefs.current[maxDigits - 1]?.focus();
+    // Berechne die maximale Länge des Ergebnisses
+    const getMaxResultLength = () => {
+        if (currentOperation === '+') {
+            // Berechne die tatsächliche Summe
+            const sum = currentNumbers.reduce((a, b) => a + b, 0);
+            // Prüfe, ob das Ergebnis eine zusätzliche Stelle benötigt
+            if (sum >= Math.pow(10, maxDigits)) {
+                return maxDigits + 1;
+            }
         }
-    }, [maxDigits, currentNumbers]);
+        return maxDigits;
+    };
+
+    useEffect(() => {
+        const maxResultLength = getMaxResultLength();
+        // Übertrag hat jetzt genauso viele Stellen wie das Ergebnis
+        setCarries(Array(maxResultLength).fill(''));
+        setAnswer(Array(maxResultLength).fill(''));
+        answerRefs.current = answerRefs.current.slice(0, maxResultLength);
+        carryRefs.current = carryRefs.current.slice(0, maxResultLength);
+
+        // Focus auf das rechteste Ergebnisfeld
+        if (answerRefs.current.length > 0) {
+            const lastIndex = maxResultLength - 1;
+            answerRefs.current[lastIndex]?.focus();
+        }
+    }, [maxDigits, currentNumbers, currentOperation]);
 
     useEffect(() => {
         startNewTask();
     }, []);
 
     const handleCarryInput = (index: number, value: string) => {
+        if (!/^[0-9]?$/.test(value)) return; // Nur Zahlen erlauben
+
         const newCarries = [...carries];
         newCarries[index] = value;
         setCarries(newCarries);
 
         if (value) {
-            // After entering a carry, focus the corresponding result field
+            // Nach Eingabe eines Übertrags zum entsprechenden Ergebnisfeld springen
             answerRefs.current[index]?.focus();
         }
     };
 
     const handleAnswerInput = (index: number, value: string) => {
+        if (!/^[0-9]?$/.test(value)) return; // Nur Zahlen erlauben
+
         const newAnswer = [...answer];
         newAnswer[index] = value;
         setAnswer(newAnswer);
 
         if (value) {
-            // After entering a result, focus the carry field to the left
+            // Nach Eingabe einer Zahl zum Übertragsfeld links davon springen
             if (index > 0) {
                 carryRefs.current[index - 1]?.focus();
             }
@@ -64,24 +84,44 @@ const Calculator: React.FC = () => {
             event.preventDefault();
 
             if (type === 'carry') {
-                // From carry field, go to corresponding result field
+                // Von Übertragsfeld zum entsprechenden Ergebnisfeld
                 answerRefs.current[index]?.focus();
             } else if (type === 'answer') {
-                // From result field, go to carry field to the left
+                // Von Ergebnisfeld zum Übertragsfeld links davon
                 if (index > 0) {
                     carryRefs.current[index - 1]?.focus();
                 }
+            }
+        } else if (event.key === 'Backspace' && (event.target as HTMLInputElement).value === '') {
+            event.preventDefault();
+            
+            if (type === 'carry' && index < carries.length - 1) {
+                // Vom Übertragsfeld zum Ergebnisfeld rechts davon
+                answerRefs.current[index + 1]?.focus();
+            } else if (type === 'answer' && index < answer.length - 1) {
+                // Vom Ergebnisfeld zum Übertragsfeld rechts davon
+                carryRefs.current[index]?.focus();
             }
         }
     };
 
     const isAnswerComplete = () => {
-        return answer.every(digit => digit !== '');
+        // Mindestens die letzte Stelle muss ausgefüllt sein
+        if (answer[answer.length - 1] === '') return false;
+        
+        // Wenn eine Stelle ausgefüllt ist, müssen alle Stellen rechts davon auch ausgefüllt sein
+        let foundDigit = false;
+        for (let i = 0; i < answer.length; i++) {
+            if (answer[i] !== '') foundDigit = true;
+            if (foundDigit && answer[i] === '') return false;
+        }
+        return true;
     };
 
     const handleCheck = () => {
         if (!isAnswerComplete()) return;
 
+        // Entferne führende Nullen und leere Stellen
         const userAnswer = parseInt(answer.join(''), 10);
         const isCorrect = checkAnswer(userAnswer);
 
@@ -89,9 +129,12 @@ const Calculator: React.FC = () => {
 
         if (isCorrect) {
             startNewTask();
-            setCarries(Array(maxDigits).fill(''));
-            setAnswer(Array(maxDigits).fill(''));
-            answerRefs.current[0]?.focus();
+            const maxResultLength = getMaxResultLength();
+            setCarries(Array(maxResultLength).fill(''));
+            setAnswer(Array(maxResultLength).fill(''));
+            // Focus auf das rechteste Ergebnisfeld
+            const lastIndex = maxResultLength - 1;
+            answerRefs.current[lastIndex]?.focus();
         }
     };
 
@@ -102,7 +145,7 @@ const Calculator: React.FC = () => {
                     {currentNumbers.map((number, index) => (
                         <div key={index} className="flex items-center">
                             <div className="w-12 h-12 flex items-center justify-center">
-                                {index === currentNumbers.length - 1 && currentOperation}
+                                {/* Kein Operationszeichen mehr hier */}
                             </div>
                             <div className="flex">
                                 {Array.from({ length: maxDigits - String(number).length }, (_, i) => (

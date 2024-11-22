@@ -1,22 +1,28 @@
 import { create } from 'zustand';
 import { Operation, GameState, Settings } from '../types';
-import { getRandomNumber } from '@/utils/math';
+import { getRandomNumber, getRandomNumberForAddition } from '@/utils/math';
 
 const generateTask = (operation: Operation, maxDigits: number): { numbers: number[], correctAnswer: number } => {
-    const numbers = Array(2).fill(0).map(() => getRandomNumber(maxDigits));
+    let numbers: number[] = [];
     let correctAnswer = 0;
 
     switch (operation) {
         case Operation.Addition:
-            correctAnswer = numbers[0] + numbers[1];
+            const firstNumber = getRandomNumberForAddition(maxDigits);
+            const secondNumber = getRandomNumberForAddition(maxDigits, firstNumber);
+            numbers = [firstNumber, secondNumber];
+            correctAnswer = firstNumber + secondNumber;
             break;
         case Operation.Subtraction:
+            numbers = Array(2).fill(0).map(() => getRandomNumber(maxDigits));
             correctAnswer = numbers[0] - numbers[1];
             break;
         case Operation.Multiplication:
+            numbers = Array(2).fill(0).map(() => getRandomNumber(maxDigits));
             correctAnswer = numbers[0] * numbers[1];
             break;
         case Operation.Division:
+            numbers = Array(2).fill(0).map(() => getRandomNumber(maxDigits));
             correctAnswer = numbers[0] / numbers[1];
             break;
     }
