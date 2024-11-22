@@ -30,6 +30,52 @@ const generateTask = (operation: Operation, maxDigits: number): { numbers: numbe
     return { numbers, correctAnswer };
 };
 
+const generateSubtractionNumbers = (maxDigits: number): [number, number] => {
+    const max = Math.pow(10, maxDigits) - 1;
+    const firstNumber = getRandomNumber(maxDigits);
+    // Ensure second number is smaller than first number to get positive result
+    const secondNumber = Math.floor(Math.random() * firstNumber);
+    return [firstNumber, secondNumber];
+};
+
+const generateTaskUpdated = (operation: Operation, maxDigits: number): { numbers: number[], correctAnswer: number } => {
+    let numbers: number[] = [];
+    let correctAnswer = 0;
+
+    switch (operation) {
+        case Operation.Addition:
+            const firstNumber = getRandomNumberForAddition(maxDigits);
+            const secondNumber = getRandomNumberForAddition(maxDigits, firstNumber);
+            numbers = [firstNumber, secondNumber];
+            correctAnswer = firstNumber + secondNumber;
+            break;
+        case Operation.Subtraction:
+            const [minuend, subtrahend] = generateSubtractionNumbers(maxDigits);
+            numbers = [minuend, subtrahend];
+            correctAnswer = minuend - subtrahend;
+            break;
+        case Operation.Multiplication:
+            numbers = Array(2).fill(0).map(() => getRandomNumber(maxDigits));
+            correctAnswer = numbers[0] * numbers[1];
+            break;
+        case Operation.Division:
+            numbers = Array(2).fill(0).map(() => getRandomNumber(maxDigits));
+            correctAnswer = numbers[0] / numbers[1];
+            break;
+    }
+
+    return { numbers, correctAnswer };
+};
+
+const getRandomOperation = (settings: Settings): Operation => {
+    const enabledOperations = [];
+    if (settings.addition.enabled) enabledOperations.push(Operation.Addition);
+    if (settings.subtraction.enabled) enabledOperations.push(Operation.Subtraction);
+    
+    if (enabledOperations.length === 0) return Operation.Addition; // Fallback
+    return enabledOperations[Math.floor(Math.random() * enabledOperations.length)];
+};
+
 interface CalculatorStore {
     currentNumbers: number[];
     correctAnswer: number;
@@ -68,8 +114,11 @@ export const useCalculatorStore = create<CalculatorStore>((set, get) => ({
     settings: initialSettings,
 
     startNewTask: () => {
-        const { numbers, correctAnswer } = generateTask(get().currentOperation, get().maxDigits);
+        const state = get();
+        const newOperation = getRandomOperation(state.settings);
+        const { numbers, correctAnswer } = generateTaskUpdated(newOperation, state.maxDigits);
         set({
+            currentOperation: newOperation,
             currentNumbers: numbers,
             correctAnswer,
             taskStartTime: Date.now(),

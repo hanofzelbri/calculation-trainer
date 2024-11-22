@@ -1,5 +1,9 @@
 export type GameMode = 'practice' | 'test';
-export type Operation = '+' | '-';
+
+export enum Operation {
+    Addition = '+',
+    Subtraction = '-'
+}
 
 export interface HistoryEntry {
     task: string;
