@@ -159,14 +159,15 @@ const Calculator: React.FC = () => {
                         </div>
                     ))}
 
+                    {/* Carry row */}
                     <div className="flex items-center">
+                        <div className="w-12 h-12 flex items-center justify-center">
+                            {/* Leerer Platz für Ausrichtung */}
+                        </div>
                         <div className="w-12 h-12 flex items-center justify-center">
                             {currentOperation}
                         </div>
                         <div className="flex">
-                            {maxDigits > carryRefs.current.length && (
-                                <div className="w-12 h-12 flex items-center justify-center font-mono" />
-                            )}
                             {Array.from({ length: getMaxResultLength() }, (_, i) => (
                                 <Input
                                     key={`carry-${i}`}
@@ -188,6 +189,7 @@ const Calculator: React.FC = () => {
 
                     <Separator className="my-4" />
 
+                    {/* Result row */}
                     <div className="flex items-center">
                         <div className="w-12 h-12 flex items-center justify-center">
                             =
