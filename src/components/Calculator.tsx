@@ -15,6 +15,8 @@ const Calculator: React.FC = () => {
     } = useCalculatorStore();
 
     const [feedback, setFeedback] = useState<string>('');
+    const [carryValues, setCarryValues] = useState<string[]>(Array(maxDigits).fill(''));
+    const [answerValues, setAnswerValues] = useState<string[]>(Array(maxDigits).fill(''));
     const answerRefs = useRef<(HTMLInputElement | null)[]>([]);
     const carryRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -58,6 +60,10 @@ const Calculator: React.FC = () => {
     const handleCarryInput = (index: number, value: string) => {
         if (!/^[0-9]?$/.test(value)) return; // Nur Zahlen erlauben
 
+        const newCarryValues = [...carryValues];
+        newCarryValues[index] = value;
+        setCarryValues(newCarryValues);
+
         if (value) {
             // Nach Eingabe eines Übertrags zum entsprechenden Ergebnisfeld springen
             answerRefs.current[index]?.focus();
@@ -66,6 +72,10 @@ const Calculator: React.FC = () => {
 
     const handleAnswerInput = (index: number, value: string) => {
         if (!/^[0-9]?$/.test(value)) return; // Nur Zahlen erlauben
+
+        const newAnswerValues = [...answerValues];
+        newAnswerValues[index] = value;
+        setAnswerValues(newAnswerValues);
 
         if (value) {
             // Nach Eingabe einer Zahl zum Übertragsfeld links davon springen
@@ -160,8 +170,8 @@ const Calculator: React.FC = () => {
                             {Array.from({ length: getMaxResultLength() }, (_, i) => (
                                 <Input
                                     key={`carry-${i}`}
-                                    type="text"
-                                    value=""
+                                    type="number"
+                                    value={carryValues[i] || ''}
                                     onChange={(e) => handleCarryInput(i, e.target.value)}
                                     onKeyDown={(e) => handleKeyDown(e, 'carry', i)}
                                     className="w-12 h-12 text-center p-0 font-mono text-lg"
@@ -170,6 +180,7 @@ const Calculator: React.FC = () => {
                                     onClick={handleInputClick}
                                     inputMode="numeric"
                                     pattern="[0-9]*"
+                                    autoComplete="off"
                                 />
                             ))}
                         </div>
@@ -185,8 +196,8 @@ const Calculator: React.FC = () => {
                             {Array.from({ length: getMaxResultLength() }, (_, i) => (
                                 <Input
                                     key={`answer-${i}`}
-                                    type="text"
-                                    value=""
+                                    type="number"
+                                    value={answerValues[i] || ''}
                                     onChange={(e) => handleAnswerInput(i, e.target.value)}
                                     onKeyDown={(e) => handleKeyDown(e, 'answer', i)}
                                     className="w-12 h-12 text-center p-0 font-mono text-lg"
@@ -195,6 +206,7 @@ const Calculator: React.FC = () => {
                                     onClick={handleInputClick}
                                     inputMode="numeric"
                                     pattern="[0-9]*"
+                                    autoComplete="off"
                                 />
                             ))}
                         </div>
