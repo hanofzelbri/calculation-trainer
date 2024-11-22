@@ -10,6 +10,8 @@ const createInitialOperationStats = (): OperationStats => ({
     totalTimeSpent: 0,
     averageTime: 0,
     bestTime: Infinity,
+    currentStreak: 0,
+    bestStreak: 0,
 });
 
 const createInitialStats = (): Statistics => ({
@@ -24,6 +26,9 @@ const createInitialStats = (): Statistics => ({
     dailyStats: [],
     averageAccuracy: 0,
     lastUpdated: new Date().toISOString(),
+    currentStreak: 0,
+    bestStreak: 0,
+    lastCorrectAnswer: null,
 });
 
 interface StatisticsStore {
@@ -50,13 +55,18 @@ export const useStatisticsStore = create<StatisticsStore>()(
                 isFirstTry: boolean,
                 isFinalAttempt: boolean
             ) => {
-                if (!isFinalAttempt) return;
+                if (!isFinalAttempt && !(isCorrect && isFirstTry)) return;
 
                 set((state) => {
                     const stats = { ...state.statistics };
                     const opStats = { ...stats.operationStats[operation] };
 
-                    opStats.totalProblems++;
+                    // Only increment total problems when the answer is correct
+                    if (isCorrect) {
+                        opStats.totalProblems++;
+                        stats.totalProblemsAllTime++;
+                    }
+
                     if (isFirstTry && isCorrect) {
                         opStats.correctFirstTry++;
                     }
@@ -69,15 +79,37 @@ export const useStatisticsStore = create<StatisticsStore>()(
                         opStats.totalErrors++;
                     }
 
+                    // Update operation-specific streak - only reset on final wrong attempt
+                    if (isCorrect && isFirstTry) {
+                        opStats.currentStreak++;
+                        opStats.bestStreak = Math.max(opStats.currentStreak, opStats.bestStreak);
+                    } else if (isFinalAttempt && !isCorrect) {
+                        // Save best streak before resetting current streak
+                        opStats.bestStreak = Math.max(opStats.currentStreak, opStats.bestStreak);
+                        opStats.currentStreak = 0;
+                    }
+
+                    // Update global streak - only reset on final wrong attempt
+                    if (isCorrect && isFirstTry) {
+                        stats.currentStreak++;
+                        stats.bestStreak = Math.max(stats.currentStreak, stats.bestStreak);
+                    } else if (isFinalAttempt && !isCorrect) {
+                        // Save best streak before resetting current streak
+                        stats.bestStreak = Math.max(stats.currentStreak, stats.bestStreak);
+                        stats.currentStreak = 0;
+                    }
+
                     const today = new Date().toISOString().split('T')[0];
                     let dailyStats = [...stats.dailyStats];
-                    let todayStats = dailyStats.find((ds) => ds.date === today);
+                    const todayStatsIndex = dailyStats.findIndex((ds) => ds.date === today);
+                    let todayStats;
 
-                    if (!todayStats) {
+                    if (todayStatsIndex === -1) {
                         todayStats = {
                             date: today,
                             totalProblems: 0,
                             totalTimeSpent: 0,
+                            correctFirstTry: 0,
                             operationBreakdown: {
                                 [Operation.Addition]: 0,
                                 [Operation.Subtraction]: 0,
@@ -85,14 +117,26 @@ export const useStatisticsStore = create<StatisticsStore>()(
                                 [Operation.Division]: 0,
                             },
                         };
-                        dailyStats.push(todayStats);
+                        dailyStats.unshift(todayStats);
+                    } else {
+                        todayStats = dailyStats[todayStatsIndex];
+                        // Remove the old entry and add the updated one at the beginning
+                        dailyStats.splice(todayStatsIndex, 1);
+                        dailyStats.unshift(todayStats);
                     }
 
-                    todayStats.totalProblems++;
+                    // Only increment total problems in daily stats when the answer is correct
+                    if (isCorrect) {
+                        todayStats.totalProblems++;
+                        todayStats.operationBreakdown[operation]++;
+                    }
+                    
                     todayStats.totalTimeSpent += timeSpent;
-                    todayStats.operationBreakdown[operation]++;
+                    if (isFirstTry && isCorrect) {
+                        todayStats.correctFirstTry++;
+                    }
 
-                    stats.totalProblemsAllTime++;
+                    stats.dailyStats = dailyStats;
                     stats.totalTimeSpentAllTime += timeSpent;
                     stats.operationStats[operation] = opStats;
 

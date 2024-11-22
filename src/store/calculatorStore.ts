@@ -139,7 +139,7 @@ export const useCalculatorStore = create<CalculatorStore>((set, get) => ({
             duration,
             isCorrect,
             state.isFirstAttempt,
-            isCorrect // isFinalAttempt is true when the answer is correct
+            true  // Always treat it as final attempt to reset streak on wrong answers
         );
 
         if (isCorrect) {

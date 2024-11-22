@@ -46,6 +46,16 @@ const OperationStatsCard: React.FC<{ operation: Operation }> = ({ operation }) =
                     <div className="text-sm text-right">{Math.round((stats.totalErrors / stats.totalProblems) * 100 || 0)}%</div>
                 </div>
                 <div className="grid grid-cols-3 gap-4 mb-4">
+                    <div className="text-sm">Aktuelle Streak</div>
+                    <div className="text-sm text-right">{stats.currentStreak}</div>
+                    <div className="text-sm text-right"></div>
+                </div>
+                <div className="grid grid-cols-3 gap-4 mb-4">
+                    <div className="text-sm">Beste Streak</div>
+                    <div className="text-sm text-right">{stats.bestStreak}</div>
+                    <div className="text-sm text-right"></div>
+                </div>
+                <div className="grid grid-cols-3 gap-4 mb-4">
                     <div className="text-sm">Durchschnittszeit</div>
                     <div className="text-sm text-right">{Math.round(stats.averageTime / 1000)}s</div>
                     <div className="text-sm text-right"></div>
@@ -62,6 +72,12 @@ const OperationStatsCard: React.FC<{ operation: Operation }> = ({ operation }) =
 
 const GlobalStats: React.FC = () => {
     const statistics = useStatisticsStore((state) => state.statistics);
+    const today = new Date().toISOString().split('T')[0];
+    const todayStats = statistics.dailyStats.find(ds => ds.date === today);
+
+    const todayAccuracy = todayStats 
+        ? Math.round((todayStats.correctFirstTry / todayStats.totalProblems) * 100) || 0
+        : 0;
 
     return (
         <Card>
@@ -69,19 +85,46 @@ const GlobalStats: React.FC = () => {
                 <h3 className="text-lg font-semibold">Gesamtstatistik</h3>
             </CardHeader>
             <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <StatCard
-                        value={statistics.totalProblemsAllTime}
-                        description="Aufgaben gesamt" />
-                    <StatCard
-                        value={formatTime(statistics.totalTimeSpentAllTime)}
-                        description="Gesamtzeit" />
-                    <StatCard
-                        value={statistics.currentStreak}
-                        description="Aktuelle Streak" />
-                    <StatCard
-                        value={`${Math.round(statistics.averageAccuracy)}%`}
-                        description="Durchschnittliche Genauigkeit" />
+                <div className="space-y-6">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <StatCard
+                            value={statistics.totalProblemsAllTime}
+                            description="Aufgaben gesamt" />
+                        <StatCard
+                            value={formatTime(statistics.totalTimeSpentAllTime)}
+                            description="Gesamtzeit" />
+                        <div className="space-y-2">
+                            <StatCard
+                                value={statistics.currentStreak}
+                                description="Aktuelle Streak" />
+                            <StatCard
+                                value={statistics.bestStreak}
+                                description="Beste Streak" />
+                        </div>
+                        <StatCard
+                            value={`${Math.round(statistics.averageAccuracy)}%`}
+                            description="Durchschnittliche Genauigkeit" />
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div>
+                        <h4 className="text-md font-semibold mb-4">Heute</h4>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <StatCard
+                                value={todayStats?.totalProblems || 0}
+                                description="Aufgaben heute" />
+                            <StatCard
+                                value={formatTime(todayStats?.totalTimeSpent || 0)}
+                                description="Zeit heute" />
+                            <StatCard
+                                value={todayStats?.correctFirstTry || 0}
+                                description="Richtig beim ersten Versuch" />
+                            <StatCard
+                                value={`${todayAccuracy}%`}
+                                description="Genauigkeit heute" />
+                        </div>
+                    </div>
                 </div>
             </CardContent>
         </Card>

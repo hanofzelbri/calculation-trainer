@@ -7,12 +7,15 @@ export interface OperationStats {
     totalTimeSpent: number; // in milliseconds
     averageTime: number; // in milliseconds
     bestTime: number; // in milliseconds
+    currentStreak: number;
+    bestStreak: number;
 }
 
 export interface DailyStats {
     date: string;
     totalProblems: number;
     totalTimeSpent: number;
+    correctFirstTry: number;
     operationBreakdown: Record<Operation, number>;
 }
 
@@ -23,4 +26,6 @@ export interface Statistics {
     dailyStats: DailyStats[];
     averageAccuracy: number;
     lastUpdated: string;
+    currentStreak: number;
+    bestStreak: number;
 }
