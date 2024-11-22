@@ -69,9 +69,17 @@ interface CalculatorStore {
     showResultPopup: boolean;
     settings: Settings;
     isFirstAttempt: boolean;
+    currentTask: boolean;
+    historyFilter: {
+        showFirstAttempts: boolean;
+        showMultipleAttempts: boolean;
+        operations: Operation[];
+    };
     startNewTask: () => void;
     checkAnswer: (answer: number) => boolean;
     setSettings: (newSettings: Partial<Settings>) => void;
+    setHistoryFilter: (filter: Partial<CalculatorStore['historyFilter']>) => void;
+    getFilteredHistory: () => GameState['history'][];
 }
 
 const initialSettings: Settings = {
@@ -90,13 +98,19 @@ const initialSettings: Settings = {
 export const useCalculatorStore = create<CalculatorStore>((set, get) => ({
     currentNumbers: [],
     correctAnswer: 0,
-    maxDigits: 1,  // Start with 1 as default
+    maxDigits: 1,
     currentOperation: Operation.Addition,
     history: loadHistory(),
     taskStartTime: null,
     showResultPopup: false,
     settings: loadSettings(),
     isFirstAttempt: true,
+    currentTask: false,
+    historyFilter: {
+        showFirstAttempts: true,
+        showMultipleAttempts: true,
+        operations: [Operation.Addition, Operation.Subtraction],
+    },
 
     startNewTask: () => {
         const state = get();
@@ -109,7 +123,8 @@ export const useCalculatorStore = create<CalculatorStore>((set, get) => ({
             maxDigits,
             taskStartTime: Date.now(),
             showResultPopup: false,
-            isFirstAttempt: true
+            isFirstAttempt: true,
+            currentTask: true
         });
     },
 
@@ -143,10 +158,20 @@ export const useCalculatorStore = create<CalculatorStore>((set, get) => ({
         );
 
         if (isCorrect) {
-            set({ showResultPopup: true, history: newHistory });
+            // First update UI to show success
+            set({ 
+                showResultPopup: true, 
+                history: newHistory
+            });
+            
+            // Use minimal delay to ensure smooth state transition
             setTimeout(() => {
-                get().startNewTask();
-            }, 1000);
+                set({ 
+                    currentNumbers: [], // Clear the old task
+                    maxDigits: 1,
+                    currentTask: false, // Only set currentTask to false when we're ready for a new task
+                });
+            }, 50); // Reduced to 50ms for quick transition while maintaining state consistency
         } else {
             set({ isFirstAttempt: false, history: newHistory });
         }
@@ -163,5 +188,57 @@ export const useCalculatorStore = create<CalculatorStore>((set, get) => ({
         };
         localStorage.setItem('calculatorSettings', JSON.stringify(updatedSettings));
         set({ settings: updatedSettings });
+    },
+
+    setHistoryFilter: (filter: Partial<CalculatorStore['historyFilter']>) => {
+        set((state) => ({
+            historyFilter: {
+                ...state.historyFilter,
+                ...filter,
+            },
+        }));
+    },
+
+    getFilteredHistory: () => {
+        const state = get();
+        
+        // Group entries by task (based on numbers, operation and timestamp within 1 minute)
+        const groupedEntries = state.history.reduce((groups, entry) => {
+            // Find a matching group within 1 minute of the entry
+            const matchingGroup = groups.find(group => {
+                const firstEntry = group[0];
+                return firstEntry.numbers.join(',') === entry.numbers.join(',') &&
+                       firstEntry.operation === entry.operation &&
+                       Math.abs(new Date(firstEntry.timestamp).getTime() - new Date(entry.timestamp).getTime()) < 60000;
+            });
+
+            if (matchingGroup) {
+                matchingGroup.push(entry);
+            } else {
+                groups.push([entry]);
+            }
+            return groups;
+        }, [] as GameState['history'][]);
+
+        // Filter groups based on filter settings
+        const filteredGroups = groupedEntries.filter(group => {
+            const isFirstAttemptSuccess = group.length === 1 && group[0].isCorrect && group[0].isFirstAttempt;
+            
+            // Filter by attempt type
+            if (isFirstAttemptSuccess && !state.historyFilter.showFirstAttempts) return false;
+            if (!isFirstAttemptSuccess && !state.historyFilter.showMultipleAttempts) return false;
+            
+            // Filter by operation
+            if (!state.historyFilter.operations.includes(group[0].operation)) return false;
+            
+            return true;
+        });
+
+        // Sort groups by timestamp of first attempt (newest first)
+        filteredGroups.sort((a, b) => 
+            new Date(b[0].timestamp).getTime() - new Date(a[0].timestamp).getTime()
+        );
+
+        return filteredGroups;
     },
 }));

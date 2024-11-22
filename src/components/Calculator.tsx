@@ -10,12 +10,15 @@ const Calculator: React.FC = () => {
         maxDigits,
         currentOperation,
         startNewTask,
-        checkAnswer
+        checkAnswer,
+        currentTask
     } = useCalculatorStore();
 
     const [carries, setCarries] = useState<string[]>([]);
     const [answer, setAnswer] = useState<string[]>([]);
     const [feedback, setFeedback] = useState<string>('');
+    const [showFeedback, setShowFeedback] = useState(false);
+    const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
     const answerRefs = useRef<(HTMLInputElement | null)[]>([]);
     const carryRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -52,8 +55,11 @@ const Calculator: React.FC = () => {
     }, [maxDigits, currentNumbers, currentOperation]);
 
     useEffect(() => {
-        startNewTask();
-    }, []);
+        // Only start a new task if we don't already have one
+        if (!currentTask) {
+            startNewTask();
+        }
+    }, [currentTask]);
 
     const handleCarryInput = (index: number, value: string) => {
         if (!/^[0-9]?$/.test(value)) return; // Nur Zahlen erlauben
@@ -83,6 +89,11 @@ const Calculator: React.FC = () => {
         }
     };
 
+    const handleInputClick = (event: React.MouseEvent<HTMLInputElement>) => {
+        const input = event.currentTarget;
+        input.select();
+    };
+
     const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>, type: 'carry' | 'answer', index: number) => {
         if (event.key === 'Tab') {
             event.preventDefault();
@@ -109,6 +120,32 @@ const Calculator: React.FC = () => {
         }
     };
 
+    const showFeedbackAnimation = (correct: boolean) => {
+        setIsCorrect(correct);
+        setShowFeedback(true);
+        setTimeout(() => setShowFeedback(false), 500);
+    };
+
+    const handleCheck = () => {
+        if (!isAnswerComplete()) return;
+
+        // Entferne führende Nullen und leere Stellen
+        const userAnswer = parseInt(answer.join(''), 10);
+        const result = checkAnswer(userAnswer);
+        showFeedbackAnimation(result);
+
+        if (result) {
+            // Clear the input fields but don't start a new task - that will happen automatically after delay
+            const maxResultLength = getMaxResultLength();
+            setCarries(Array(maxResultLength).fill(''));
+            setAnswer(Array(maxResultLength).fill(''));
+        } else {
+            // Bei falscher Antwort: Fokus auf das letzte Feld setzen
+            const lastIndex = answer.length - 1;
+            answerRefs.current[lastIndex]?.focus();
+        }
+    };
+
     const isAnswerComplete = () => {
         // Mindestens die letzte Stelle muss ausgefüllt sein
         if (answer[answer.length - 1] === '') return false;
@@ -122,28 +159,8 @@ const Calculator: React.FC = () => {
         return true;
     };
 
-    const handleCheck = () => {
-        if (!isAnswerComplete()) return;
-
-        // Entferne führende Nullen und leere Stellen
-        const userAnswer = parseInt(answer.join(''), 10);
-        const isCorrect = checkAnswer(userAnswer);
-
-        setFeedback(isCorrect ? 'Richtig!' : 'Falsch, versuche es noch einmal.');
-
-        if (isCorrect) {
-            startNewTask();
-            const maxResultLength = getMaxResultLength();
-            setCarries(Array(maxResultLength).fill(''));
-            setAnswer(Array(maxResultLength).fill(''));
-            // Focus auf das rechteste Ergebnisfeld
-            const lastIndex = maxResultLength - 1;
-            answerRefs.current[lastIndex]?.focus();
-        }
-    };
-
     return (
-        <div className="container p-6 space-y-6 bg-white rounded-lg shadow-lg">
+        <div className={`container p-6 space-y-6 bg-white rounded-lg shadow-lg ${showFeedback ? (isCorrect ? 'feedback-correct' : 'feedback-incorrect') : ''} ${showFeedback ? 'feedback-animation' : ''}`}>
             <div className="calculation-area bg-white p-6 rounded-lg border shadow-lg space-y-6">
                 <div className="flex flex-col items-end space-y-4">
                     {currentNumbers.map((number, index) => (
@@ -179,6 +196,7 @@ const Calculator: React.FC = () => {
                                     className="w-12 h-12 text-center p-0 font-mono text-lg"
                                     maxLength={1}
                                     ref={(el) => carryRefs.current[index] = el}
+                                    onClick={handleInputClick}
                                     inputMode="numeric"
                                     pattern="[0-9]*"
                                 />
@@ -203,6 +221,7 @@ const Calculator: React.FC = () => {
                                     className="w-12 h-12 text-center p-0 font-mono text-lg"
                                     maxLength={1}
                                     ref={(el) => answerRefs.current[index] = el}
+                                    onClick={handleInputClick}
                                     inputMode="numeric"
                                     pattern="[0-9]*"
                                 />
