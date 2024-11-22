@@ -18,6 +18,11 @@ export interface Settings {
         maxNumber: number;
         numberCount: number;
     };
+    multiplication: {
+        enabled: boolean;
+        maxNumber: number;
+        maxMultiplier: number;
+    };
 }
 
 export interface HistoryEntry {

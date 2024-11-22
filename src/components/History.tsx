@@ -26,7 +26,7 @@ const OperatorBadge = ({ operator }: { operator: Operation }) => {
 export const History = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const { historyFilter, setHistoryFilter, getFilteredHistory } = useCalculatorStore();
-  
+
   // Get filtered history groups
   const filteredHistoryGroups = getFilteredHistory();
   const totalPages = Math.ceil(filteredHistoryGroups.length / ITEMS_PER_PAGE);
@@ -53,142 +53,138 @@ export const History = () => {
   };
 
   return (
-    <div className="space-y-4 w-full max-w-[95vw] sm:max-w-[90vw] md:max-w-[80vw] lg:max-w-[1000px] mx-auto">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xl sm:text-2xl text-center sm:text-left">Verlauf</CardTitle>
-          <div className="flex flex-col gap-4">
-            {/* Attempt Type Filter */}
-            <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
-              <Button
-                variant={historyFilter.showFirstAttempts ? "default" : "outline"}
-                onClick={() => handleFilterChange({ showFirstAttempts: !historyFilter.showFirstAttempts })}
-                className="text-xs sm:text-sm"
-              >
-                Erster Versuch
-              </Button>
-              <Button
-                variant={historyFilter.showMultipleAttempts ? "default" : "outline"}
-                onClick={() => handleFilterChange({ showMultipleAttempts: !historyFilter.showMultipleAttempts })}
-                className="text-xs sm:text-sm"
-              >
-                Mehrere Versuche
-              </Button>
-            </div>
-            
-            {/* Operator Filter */}
-            <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
-              {Object.values(Operation).map((op) => (
-                <Button
-                  key={op}
-                  variant={historyFilter.operations.includes(op) ? "default" : "outline"}
-                  onClick={() => {
-                    const newOperations = historyFilter.operations.includes(op)
-                      ? historyFilter.operations.filter(o => o !== op)
-                      : [...historyFilter.operations, op];
-                    handleFilterChange({ operations: newOperations });
-                  }}
-                  className="text-xs sm:text-sm"
-                >
-                  {op}
-                </Button>
-              ))}
-            </div>
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-xl sm:text-2xl text-center sm:text-left">Verlauf</CardTitle>
+        <div className="flex flex-col gap-4">
+          {/* Attempt Type Filter */}
+          <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
+            <Button
+              variant={historyFilter.showFirstAttempts ? "default" : "outline"}
+              onClick={() => handleFilterChange({ showFirstAttempts: !historyFilter.showFirstAttempts })}
+              className="text-xs sm:text-sm"
+            >
+              Erster Versuch
+            </Button>
+            <Button
+              variant={historyFilter.showMultipleAttempts ? "default" : "outline"}
+              onClick={() => handleFilterChange({ showMultipleAttempts: !historyFilter.showMultipleAttempts })}
+              className="text-xs sm:text-sm"
+            >
+              Mehrere Versuche
+            </Button>
           </div>
-        </CardHeader>
-        <CardContent>
-          <ScrollArea className="h-[60vh] sm:h-[70vh] pr-4">
-            <div className="space-y-4">
-              {currentGroups.map((group) => {
-                const lastEntry = group[group.length - 1];
-                const firstEntry = group[0];
-                
-                return (
-                  <div 
-                    key={firstEntry.timestamp} 
-                    className={`p-4 border rounded-lg transition-colors ${
-                      lastEntry.isCorrect 
-                        ? 'bg-green-50 border-green-200' 
-                        : 'bg-red-50 border-red-200'
+
+          {/* Operator Filter */}
+          <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
+            {Object.values(Operation).map((op) => (
+              <Button
+                key={op}
+                variant={historyFilter.operations.includes(op) ? "default" : "outline"}
+                onClick={() => {
+                  const newOperations = historyFilter.operations.includes(op)
+                    ? historyFilter.operations.filter(o => o !== op)
+                    : [...historyFilter.operations, op];
+                  handleFilterChange({ operations: newOperations });
+                }}
+                className="text-xs sm:text-sm"
+              >
+                {op}
+              </Button>
+            ))}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <ScrollArea className="h-[calc(100vh-18rem)] sm:h-[60vh]">
+          <div className="space-y-4">
+            {currentGroups.map((group) => {
+              const lastEntry = group[group.length - 1];
+              const firstEntry = group[0];
+
+              return (
+                <div
+                  key={firstEntry.timestamp}
+                  className={`p-4 border rounded-lg transition-colors ${lastEntry.isCorrect
+                      ? 'bg-green-50 border-green-200'
+                      : 'bg-red-50 border-red-200'
                     }`}
-                  >
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <OperatorBadge operator={firstEntry.operation} />
-                          {group.length === 1 && firstEntry.isCorrect && firstEntry.isFirstAttempt && (
-                            <Badge className="bg-blue-100 text-blue-800 border-none">
-                              Erster Versuch
-                            </Badge>
-                          )}
-                        </div>
-                        <span className="text-sm text-muted-foreground">
-                          {new Date(firstEntry.timestamp).toLocaleDateString('de-DE', {
-                            day: '2-digit',
-                            month: '2-digit',
-                            year: 'numeric'
-                          })} {new Date(firstEntry.timestamp).toLocaleTimeString('de-DE', {
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </span>
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <OperatorBadge operator={firstEntry.operation} />
+                        {group.length === 1 && firstEntry.isCorrect && firstEntry.isFirstAttempt && (
+                          <Badge className="bg-blue-100 text-blue-800 border-none">
+                            Erster Versuch
+                          </Badge>
+                        )}
                       </div>
+                      <span className="text-sm text-muted-foreground">
+                        {new Date(firstEntry.timestamp).toLocaleDateString('de-DE', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric'
+                        })} {new Date(firstEntry.timestamp).toLocaleTimeString('de-DE', {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </span>
+                    </div>
 
-                      <div>
-                        <span className="text-sm text-muted-foreground">Aufgabe:</span>
-                        <div className="text-lg font-medium">
-                          {firstEntry.numbers.join(` ${firstEntry.operation} `)} = {firstEntry.correctAnswer}
-                        </div>
+                    <div>
+                      <span className="text-sm text-muted-foreground">Aufgabe:</span>
+                      <div className="text-lg font-medium">
+                        {firstEntry.numbers.join(` ${firstEntry.operation} `)} = {firstEntry.correctAnswer}
                       </div>
+                    </div>
 
-                      <div className="space-y-2">
-                        <span className="text-sm text-muted-foreground">Versuche:</span>
-                        {group.map((attempt, index) => (
-                          <div key={attempt.timestamp} className="pl-4">
-                            <div className={`text-base ${
-                              attempt.isCorrect ? 'text-green-600' : 'text-red-600'
+                    <div className="space-y-2">
+                      <span className="text-sm text-muted-foreground">Versuche:</span>
+                      {group.map((attempt, index) => (
+                        <div key={attempt.timestamp} className="pl-4">
+                          <div className={`text-base ${attempt.isCorrect ? 'text-green-600' : 'text-red-600'
                             }`}>
-                              {index + 1}. Versuch: {attempt.userAnswer}
-                              <span className="text-sm text-muted-foreground ml-2">
-                                ({(attempt.duration / 1000).toFixed(1)}s)
-                              </span>
-                            </div>
+                            {index + 1}. Versuch: {attempt.userAnswer}
+                            <span className="text-sm text-muted-foreground ml-2">
+                              ({(attempt.duration / 1000).toFixed(1)}s)
+                            </span>
                           </div>
-                        ))}
-                        <div className="text-sm text-muted-foreground mt-2">
-                          Gesamtzeit: {(group.reduce((total, attempt) => total + attempt.duration, 0) / 1000).toFixed(1)}s
                         </div>
+                      ))}
+                      <div className="text-sm text-muted-foreground mt-2">
+                        Gesamtzeit: {(group.reduce((total, attempt) => total + attempt.duration, 0) / 1000).toFixed(1)}s
                       </div>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          </ScrollArea>
-          
-          {totalPages > 1 && (
-            <div className="flex justify-between mt-4">
-              <Button
-                onClick={prevPage}
-                disabled={currentPage === 0}
-                variant="outline"
-              >
-                Vorherige
-              </Button>
-              <span className="py-2">
-                Seite {currentPage + 1} von {totalPages}
-              </span>
-              <Button
-                onClick={nextPage}
-                disabled={currentPage === totalPages - 1}
-                variant="outline"
-              >
-                Nächste
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+                </div>
+              );
+            })}
+          </div>
+        </ScrollArea>
+
+        {totalPages > 1 && (
+          <div className="flex justify-between mt-4">
+            <Button
+              onClick={prevPage}
+              disabled={currentPage === 0}
+              variant="outline"
+            >
+              Vorherige
+            </Button>
+            <span className="py-2">
+              Seite {currentPage + 1} von {totalPages}
+            </span>
+            <Button
+              onClick={nextPage}
+              disabled={currentPage === totalPages - 1}
+              variant="outline"
+            >
+              Nächste
+            </Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };

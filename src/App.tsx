@@ -9,7 +9,7 @@ const App: React.FC = () => {
   return (
     <div className="container max-w-2xl pb-16 sm:pb-0">
       <Tabs defaultValue="practice" className="w-full">
-        <TabsList className="fixed bottom-0 left-0 right-0 grid w-full grid-cols-4 gap-0 border-t bg-background p-2 sm:relative sm:gap-2 sm:border-none sm:p-0 sm:mb-4 shadow-lg sm:shadow-none sm:bg-transparent">
+        <TabsList className="fixed bottom-0 h-18 left-0 right-0 grid w-full grid-cols-4 gap-0 border-t bg-background p-2 sm:relative sm:gap-2 sm:border-none sm:p-0 sm:mb-4 shadow-lg sm:shadow-none sm:bg-transparent">
           <TabsTrigger value="practice" className="flex flex-col items-center text-xs gap-1 data-[state=active]:text-blue-500 data-[state=active]:fill-blue-500">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" className="stroke-current"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.75 15.75V18m-6-6v6m-2.25-4.5v4.5m10.5-6v6m4.5-11.25h-21L12 3l10.5 4.5Z"/></svg>
             Üben

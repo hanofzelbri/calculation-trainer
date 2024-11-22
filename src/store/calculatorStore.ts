@@ -5,7 +5,27 @@ import { useStatisticsStore } from './statisticsStore';
 // Load settings from localStorage or use initial settings
 const loadSettings = (): Settings => {
     const savedSettings = localStorage.getItem('calculatorSettings');
-    return savedSettings ? JSON.parse(savedSettings) : initialSettings;
+    if (!savedSettings) return initialSettings;
+    
+    const parsedSettings = JSON.parse(savedSettings);
+    // Ensure all required settings are present
+    return {
+        addition: {
+            enabled: parsedSettings.addition?.enabled ?? initialSettings.addition.enabled,
+            maxNumber: parsedSettings.addition?.maxNumber ?? initialSettings.addition.maxNumber,
+            numberCount: parsedSettings.addition?.numberCount ?? initialSettings.addition.numberCount,
+        },
+        subtraction: {
+            enabled: parsedSettings.subtraction?.enabled ?? initialSettings.subtraction.enabled,
+            maxNumber: parsedSettings.subtraction?.maxNumber ?? initialSettings.subtraction.maxNumber,
+            numberCount: parsedSettings.subtraction?.numberCount ?? initialSettings.subtraction.numberCount,
+        },
+        multiplication: {
+            enabled: parsedSettings.multiplication?.enabled ?? initialSettings.multiplication.enabled,
+            maxNumber: parsedSettings.multiplication?.maxNumber ?? initialSettings.multiplication.maxNumber,
+            maxMultiplier: Math.max(1, parsedSettings.multiplication?.maxMultiplier ?? initialSettings.multiplication.maxMultiplier),
+        },
+    };
 };
 
 // Load history from localStorage or use empty array
@@ -18,24 +38,31 @@ const generateTaskUpdated = (operation: Operation, settings: Settings): { number
     let numbers: number[] = [];
     let correctAnswer = 0;
 
-    const operationSettings = operation === Operation.Addition ? settings.addition : settings.subtraction;
-    const maxNumber = operationSettings.maxNumber;
-    const numberCount = operationSettings.numberCount;
-
     switch (operation) {
         case Operation.Addition:
-            numbers = Array(numberCount).fill(0).map(() => Math.floor(Math.random() * (maxNumber + 1)));
+            const additionSettings = settings.addition;
+            numbers = Array(additionSettings.numberCount).fill(0).map(() => Math.floor(Math.random() * (additionSettings.maxNumber + 1)));
             correctAnswer = numbers.reduce((sum, num) => sum + num, 0);
             break;
         case Operation.Subtraction:
+            const subtractionSettings = settings.subtraction;
             // For subtraction, ensure first number is largest to avoid negative results
-            const firstNumber = Math.floor(Math.random() * (maxNumber + 1));
-            const remainingNumbers = Array(numberCount - 1)
+            const firstNumber = Math.floor(Math.random() * (subtractionSettings.maxNumber + 1));
+            const remainingNumbers = Array(subtractionSettings.numberCount - 1)
                 .fill(0)
                 .map(() => Math.floor(Math.random() * (firstNumber + 1)));
             numbers = [firstNumber, ...remainingNumbers];
             correctAnswer = numbers.reduce((result, num, index) => 
                 index === 0 ? num : result - num, 0);
+            break;
+        case Operation.Multiplication:
+            const multiplicationSettings = settings.multiplication;
+            // Generate first number up to maxNumber
+            const multiplicand = Math.floor(Math.random() * (multiplicationSettings.maxNumber + 1)) + 1;
+            // Generate second number up to maxMultiplier
+            const multiplier = Math.floor(Math.random() * (multiplicationSettings.maxMultiplier - 1 + 1)) + 1;
+            numbers = [multiplicand, multiplier];
+            correctAnswer = multiplicand * multiplier;
             break;
         default:
             throw new Error(`Operation ${operation} not supported`);
@@ -54,6 +81,7 @@ const getRandomOperation = (settings: Settings): Operation => {
     const enabledOperations = [];
     if (settings.addition.enabled) enabledOperations.push(Operation.Addition);
     if (settings.subtraction.enabled) enabledOperations.push(Operation.Subtraction);
+    if (settings.multiplication.enabled) enabledOperations.push(Operation.Multiplication);
     
     if (enabledOperations.length === 0) return Operation.Addition; // Fallback
     return enabledOperations[Math.floor(Math.random() * enabledOperations.length)];
@@ -93,6 +121,11 @@ const initialSettings: Settings = {
         maxNumber: 100,
         numberCount: 2,
     },
+    multiplication: {
+        enabled: true,
+        maxNumber: 10000,
+        maxMultiplier: 9,
+    },
 };
 
 export const useCalculatorStore = create<CalculatorStore>((set, get) => ({
@@ -109,7 +142,7 @@ export const useCalculatorStore = create<CalculatorStore>((set, get) => ({
     historyFilter: {
         showFirstAttempts: true,
         showMultipleAttempts: true,
-        operations: [Operation.Addition, Operation.Subtraction],
+        operations: [Operation.Addition, Operation.Subtraction, Operation.Multiplication],
     },
 
     startNewTask: () => {
@@ -185,6 +218,7 @@ export const useCalculatorStore = create<CalculatorStore>((set, get) => ({
             ...currentSettings,
             addition: { ...currentSettings.addition, ...newSettings.addition },
             subtraction: { ...currentSettings.subtraction, ...newSettings.subtraction },
+            multiplication: { ...currentSettings.multiplication, ...newSettings.multiplication },
         };
         localStorage.setItem('calculatorSettings', JSON.stringify(updatedSettings));
         set({ settings: updatedSettings });
