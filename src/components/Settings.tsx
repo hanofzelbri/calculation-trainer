@@ -1,18 +1,16 @@
 import React from 'react';
-import { useCalculatorStore } from '../store/calculatorStore';
+import { useSettingsStore } from '../store/settings.store';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 
 export const Settings: React.FC = () => {
-    const {
-        settings,
-        setSettings,
-    } = useCalculatorStore();
+    const settings = useSettingsStore((state) => state.settings);
+    const updateSettings = useSettingsStore((state) => state.updateSettings);
 
     const handleSettingsChange = (newSettings: Partial<typeof settings>) => {
-        setSettings({ ...settings, ...newSettings });
+        updateSettings(newSettings);
     };
 
     return (
@@ -146,34 +144,37 @@ export const Settings: React.FC = () => {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="multiplication-max-number">Maximale erste Zahl</Label>
+                            <Label htmlFor="multiplication-max-left">Maximale linke Zahl</Label>
                             <Input
-                                id="multiplication-max-number"
+                                id="multiplication-max-left"
                                 type="number"
-                                value={settings.multiplication.maxNumber}
+                                value={settings.multiplication.maxLeftNumber}
                                 onChange={(e) =>
                                     handleSettingsChange({
-                                        multiplication: { ...settings.multiplication, maxNumber: parseInt(e.target.value) }
+                                        multiplication: { 
+                                            ...settings.multiplication, 
+                                            maxLeftNumber: parseInt(e.target.value) 
+                                        }
                                     })
                                 }
                                 min={1}
                             />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="multiplication-max-multiplier">Maximale zweite Zahl (1-9)</Label>
+                            <Label htmlFor="multiplication-max-right">Maximale rechte Zahl</Label>
                             <Input
-                                id="multiplication-max-multiplier"
+                                id="multiplication-max-right"
                                 type="number"
-                                value={settings.multiplication.maxMultiplier}
-                                onChange={(e) => {
-                                    const value = parseInt(e.target.value);
-                                    const clampedValue = Math.min(Math.max(value, 1), 9);
+                                value={settings.multiplication.maxRightNumber}
+                                onChange={(e) =>
                                     handleSettingsChange({
-                                        multiplication: { ...settings.multiplication, maxMultiplier: clampedValue }
-                                    });
-                                }}
+                                        multiplication: { 
+                                            ...settings.multiplication, 
+                                            maxRightNumber: parseInt(e.target.value) 
+                                        }
+                                    })
+                                }
                                 min={1}
-                                max={9}
                             />
                         </div>
                     </CardContent>

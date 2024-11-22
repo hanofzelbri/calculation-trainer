@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Operation, OperationStats, Statistics, DailyStats, StatisticsState, StatisticsActions } from '@/types';
+import { Operation, OperationStats, Statistics, DailyStats, StatisticsStore } from '@/types';
 
 const createInitialOperationStats = (): OperationStats => ({
     totalProblems: 0,
@@ -30,8 +30,6 @@ const createInitialStats = (): Statistics => ({
     lastCorrectAnswer: null,
 });
 
-interface StatisticsStore extends StatisticsState, StatisticsActions {}
-
 export const useStatisticsStore = create<StatisticsStore>()(
     persist(
         (set) => ({
@@ -40,8 +38,8 @@ export const useStatisticsStore = create<StatisticsStore>()(
             updateStatistics: (entry: {
                 operation: Operation;
                 isCorrect: boolean;
-                isFirstTry: boolean;
                 time: number;
+                isFirstTry: boolean;
             }) => {
                 set((state) => {
                     const stats = { ...state.statistics };
@@ -116,11 +114,13 @@ export const useStatisticsStore = create<StatisticsStore>()(
                         todayStats.correctAttempts++;
                         todayStats.operationCounts[entry.operation]++;
                     }
-
-                    todayStats.timeSpent += entry.time;
                     todayStats.totalAttempts++;
-                    todayStats.accuracy = todayStats.totalAttempts > 0 ? (todayStats.correctAttempts / todayStats.totalAttempts) : 0;
+                    if (entry.isFirstTry && entry.isCorrect) {
+                        todayStats.correctFirstTry++;
+                    }
+                    todayStats.timeSpent += entry.time;
                     todayStats.averageTime = todayStats.timeSpent / todayStats.totalAttempts;
+                    todayStats.accuracy = todayStats.correctAttempts / todayStats.totalAttempts;
 
                     stats.dailyStats = dailyStats;
                     stats.totalTimeSpentAllTime += entry.time;

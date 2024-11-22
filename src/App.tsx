@@ -1,5 +1,5 @@
 import React from 'react';
-import Calculator from './components/Calculator';
+import { Calculator } from './components/Calculator';
 import { StatisticsView } from './components/StatisticsView';
 import Settings from './components/Settings';
 import { History } from './components/History';

@@ -1,7 +1,7 @@
 import React from 'react';
-import { useStatisticsStore } from '../store/statisticsStore';
+import { useStatisticsStore } from '../store/statistics.store';
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
-import { Operation } from '@/types';
+import { Operation, DailyStats } from '@/types';
 
 const formatTime = (ms: number): string => {
     if (ms === Infinity) return '-';
@@ -105,9 +105,9 @@ const TotalStatistics: React.FC = () => {
 const TodayStatistics: React.FC = () => {
     const statistics = useStatisticsStore((state) => state.statistics);
     const today = new Date().toISOString().split('T')[0];
-    const todayStats = statistics.dailyStats.find(ds => ds.date === today);
+    const todayStats = statistics.dailyStats.find((ds: DailyStats) => ds.date === today);
     const todayAccuracy = todayStats
-        ? Math.round((todayStats.correctFirstTry / todayStats.totalProblems) * 100) || 0
+        ? Math.round((todayStats.accuracy) * 100) || 0
         : 0;
 
     return (
@@ -118,11 +118,14 @@ const TodayStatistics: React.FC = () => {
             <CardContent>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <StatCard
-                        value={todayStats?.totalProblems || 0}
-                        description="Aufgaben heute" />
+                        value={todayStats?.problemsSolved || 0}
+                        description="Problems Solved" />
                     <StatCard
-                        value={formatTime(todayStats?.totalTimeSpent || 0)}
-                        description="Zeit heute" />
+                        value={formatTime(todayStats?.timeSpent || 0)}
+                        description="Time Spent" />
+                    <StatCard
+                        value={todayStats?.accuracy ? `${(todayStats.accuracy * 100).toFixed(1)}%` : '0%'}
+                        description="Accuracy" />
                     <StatCard
                         value={todayStats?.correctFirstTry || 0}
                         description="Richtig beim ersten Versuch" />
