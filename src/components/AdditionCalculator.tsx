@@ -23,8 +23,21 @@ export const AdditionCalculator: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
             <div className="flex justify-center">
                 <div className="font-mono text-4xl font-bold space-y-2">
+                    {/* Numbers */}
+                    {numbers.map((num, index) => (
+                        <div className="flex justify-end" key={index}>
+                            {index > 0 && <span className="mr-4">+</span>}
+                            <DisplayNumber
+                                key={index}
+                                number={num}
+                                digitCount={digitCount}
+                            />
+                        </div>
+                    ))}
+
                     {/* Carry inputs */}
                     <div className="text-gray-500 h-8 flex justify-end">
+                        <span className="mr-4">+</span>
                         {indices.map((i) => (
                             <DigitInput
                                 key={`carry-${i}`}
@@ -39,16 +52,8 @@ export const AdditionCalculator: React.FC = () => {
                             />
                         ))}
                     </div>
-                    
-                    {/* Numbers */}
-                    {numbers.map((num, index) => (
-                        <DisplayNumber
-                            key={index}
-                            number={num}
-                            digitCount={digitCount}
-                            isLast={index === numbers.length - 1}
-                        />
-                    ))}
+
+                    <div className="border-t-4 border-black pt-2" />
 
                     {/* Answer inputs */}
                     <div className="flex justify-end pt-2">
@@ -69,8 +74,8 @@ export const AdditionCalculator: React.FC = () => {
                 </div>
             </div>
 
-            <Button 
-                type="submit" 
+            <Button
+                type="submit"
                 className="w-full mt-4"
                 disabled={userAnswer.some(digit => digit === '')}
             >
