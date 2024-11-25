@@ -1,41 +1,69 @@
 import { useState, useCallback, useEffect } from 'react';
 
-// Mapping of numbers to letters (we'll use results modulo the array length)
-const LETTER_MAPPING = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-
-// Collection of motivational and fun messages
+// Collection of motivational messages
 const MESSAGES = [
+    // German messages
     "DU BIST SUPER",
-    "MATHE MACHT SPASS",
     "WEITER SO CHAMPION",
+    "DAS WAR SPITZE",
     "TOLL GEMACHT",
     "RICHTIG STARK",
-    "MATHE HELD",
-    "SUPER LEISTUNG",
-    "KLASSE GEMACHT",
-    "SPITZE",
-    "PERFEKT",
-    "WAHNSINN",
-    "SEHR GUT",
-    "CLEVER",
-    "BRILLIANT",
-    "FANTASTISCH",
-    "WUNDERBAR",
-    "GROSSARTIG",
-    "MEGA STARK",
-    "SUPER SCHLAU",
-    "GENIAL",
-    // ... (adding more messages to reach 100+)
-    "MATHE PROFI",
-    "ZAHLEN GENIE",
-    "RECHENKOENIG",
-    "MATHE STAR",
-    "SUPER HIRN",
-    "ZAHLEN HELD",
-    "MATHEMEISTER",
-    "RECHENBLITZ",
-    "MATHEMAGIER",
-    "ZAHLENZAUBERER"
+    "MATHE MACHT SPASS",
+    "DU BIST EIN HELD",
+    "KLASSE LEISTUNG",
+    "EINFACH PERFEKT",
+    "DU SCHAFFST DAS",
+    "MEGA COOL",
+    "SEHR GUT GEMACHT",
+    "DU BIST SCHLAU",
+    "STARK GERECHNET",
+    "SUPER ERGEBNIS",
+    "WEITER SO PROFI",
+    "ECHT KLASSE",
+    "DU BIST GENIAL",
+    "PRIMA ARBEIT",
+    "TOP LEISTUNG",
+    "BLEIB AM BALL",
+    "DU BIST AUF KURS",
+    "WAHNSINN WIE GUT",
+    "MATHE IST DEIN DING",
+    "SUPER FORTSCHRITTE",
+    "DU WIRST IMMER BESSER",
+    "RICHTIG TOLL GEMACHT",
+    "WEITER SO SUPERSTAR",
+    "DAS KLAPPT JA SUPER",
+    "MATHE MACHT DIR SPASS",
+    "DU BIST EIN MATHE ASS",
+    "TOLL WIE DU DAS MACHST",
+    "SUPER KONZENTRIERT",
+    "DAS IST DER WEG",
+    "RICHTIG GUT GERECHNET",
+    "DU BIST AUF EINER WELLE",
+    "MATHE IST DEINE STAERKE",
+    "DAS MACHT RICHTIG SPASS",
+    "EINFACH NUR SPITZE",
+    "DU BIST EIN MATHEGENIE",
+    // English messages
+    "YOU ARE AMAZING",
+    "KEEP IT UP CHAMPION",
+    "WELL DONE FRIEND",
+    "BRILLIANT WORK",
+    "SUPER SMART",
+    "MATH IS FUN",
+    "YOU ARE A STAR",
+    "AWESOME JOB",
+    "SIMPLY PERFECT",
+    "YOU CAN DO THIS",
+    "REALLY COOL",
+    "GREAT PROGRESS",
+    "YOU ARE BRILLIANT",
+    "MATH GENIUS",
+    "EXCELLENT WORK",
+    "KEEP GOING PRO",
+    "TOTALLY AWESOME",
+    "YOU ARE INCREDIBLE",
+    "FANTASTIC JOB",
+    "TOP PERFORMANCE"
 ];
 
 type MissingPosition = 'num1' | 'num2' | 'result';
@@ -48,122 +76,140 @@ interface Problem {
     missingPosition: MissingPosition;
 }
 
+interface MessageItem {
+    letter: string;
+    revealed: boolean;
+    isSpace: boolean;
+}
+
 export const useMultiplicationCalculator = () => {
     const [currentProblem, setCurrentProblem] = useState<Problem | null>(null);
-    const [message, setMessage] = useState('');
-    const [solvedProblems, setSolvedProblems] = useState<string[]>([]);
+    const [currentMessage, setCurrentMessage] = useState('');
+    const [solvedLetters, setSolvedLetters] = useState<boolean[]>([]);
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
     const [streak, setStreak] = useState(0);
+    const [isMessageComplete, setIsMessageComplete] = useState(false);
+    const [nextLetterIndex, setNextLetterIndex] = useState(0);
 
-    // Generate wrong answers based on the missing position
-    const generateChoices = (correctAnswer: number, missingPosition: MissingPosition): number[] => {
-        const choices = new Set<number>();
-        choices.add(correctAnswer);
-
-        while (choices.size < 4) {
-            let wrongAnswer;
-
-            if (missingPosition === 'result') {
-                // For result, generate answers close to the correct result
-                const offset = Math.floor(Math.random() * 10) + 1;
-                wrongAnswer = Math.random() < 0.5 ? 
-                    correctAnswer + offset : 
-                    Math.max(1, correctAnswer - offset);
-            } else {
-                // For missing factors, use numbers 1-10
-                wrongAnswer = Math.floor(Math.random() * 10) + 1;
-            }
-
-            if (wrongAnswer > 0 && wrongAnswer <= (missingPosition === 'result' ? 100 : 10)) {
-                choices.add(wrongAnswer);
-            }
-        }
-
-        // Convert to array and shuffle
-        return Array.from(choices).sort(() => Math.random() - 0.5);
-    };
-
-    // Generate a new multiplication problem
     const generateProblem = useCallback(() => {
         const num1 = Math.floor(Math.random() * 10) + 1;
         const num2 = Math.floor(Math.random() * 10) + 1;
         const result = num1 * num2;
 
-        // Randomly choose which position will be missing
         const positions: MissingPosition[] = ['num1', 'num2', 'result'];
         const missingPosition = positions[Math.floor(Math.random() * positions.length)];
 
-        // Generate choices based on the missing position
-        const correctAnswer = missingPosition === 'num1' ? num1 : 
-                            missingPosition === 'num2' ? num2 : result;
-        const choices = generateChoices(correctAnswer, missingPosition);
+        let correctAnswer: number;
+        if (missingPosition === 'num1') correctAnswer = num1;
+        else if (missingPosition === 'num2') correctAnswer = num2;
+        else correctAnswer = result;
 
-        setCurrentProblem({ num1, num2, result, choices, missingPosition });
+        // Generate wrong answers
+        const wrongAnswers = new Set<number>();
+        while (wrongAnswers.size < 3) {
+            let wrongAnswer: number;
+            if (missingPosition === 'result') {
+                // For result, use other possible multiplication results
+                const possibleResults = [];
+                for (let i = 1; i <= 10; i++) {
+                    for (let j = 1; j <= 10; j++) {
+                        if (i * j !== result) possibleResults.push(i * j);
+                    }
+                }
+                wrongAnswer = possibleResults[Math.floor(Math.random() * possibleResults.length)];
+            } else {
+                // For num1 or num2, use numbers 1-10
+                wrongAnswer = Math.floor(Math.random() * 10) + 1;
+            }
+            if (wrongAnswer !== correctAnswer) {
+                wrongAnswers.add(wrongAnswer);
+            }
+        }
+
+        // Create and shuffle choices
+        const choices = [...wrongAnswers, correctAnswer];
+        for (let i = choices.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [choices[i], choices[j]] = [choices[j], choices[i]];
+        }
+
+        return {
+            num1,
+            num2,
+            result,
+            missingPosition,
+            choices
+        };
     }, []);
 
-    // Initialize the game
-    useEffect(() => {
-        if (!currentProblem) {
-            generateProblem();
-            // Select a random message
-            const randomMessage = MESSAGES[Math.floor(Math.random() * MESSAGES.length)];
-            setMessage(randomMessage);
-            setSolvedProblems([]);
-        }
-    }, [currentProblem, generateProblem]);
+    const startNewMessage = useCallback(() => {
+        const message = MESSAGES[Math.floor(Math.random() * MESSAGES.length)];
+        setCurrentMessage(message);
+        setSolvedLetters(new Array(message.length).fill(false));
+        setIsMessageComplete(false);
+        setStreak(0);
+        setNextLetterIndex(0);
+        setCurrentProblem(generateProblem());
+    }, [generateProblem]);
 
-    // Convert a number to a letter using the mapping
-    const numberToLetter = (num: number): string => {
-        return LETTER_MAPPING[num % LETTER_MAPPING.length];
+    useEffect(() => {
+        startNewMessage();
+    }, [startNewMessage]);
+
+    const findNextUnrevealedLetterIndex = (currentIndex: number, solvedLetters: boolean[]) => {
+        let index = currentIndex;
+        while (index < solvedLetters.length) {
+            if (!solvedLetters[index] && currentMessage[index] !== ' ') {
+                return index;
+            }
+            index++;
+        }
+        return -1; // No more letters to reveal
     };
 
-    // Check the user's answer
-    const checkAnswer = (answer: number) => {
-        if (!currentProblem) return false;
+    const checkAnswer = useCallback((answer: number) => {
+        if (!currentProblem) return;
 
-        const correctAnswer = currentProblem.missingPosition === 'num1' ? currentProblem.num1 :
-                            currentProblem.missingPosition === 'num2' ? currentProblem.num2 :
-                            currentProblem.result;
+        const isAnswerCorrect = (
+            (currentProblem.missingPosition === 'num1' && answer === currentProblem.num1) ||
+            (currentProblem.missingPosition === 'num2' && answer === currentProblem.num2) ||
+            (currentProblem.missingPosition === 'result' && answer === currentProblem.result)
+        );
 
-        const correct = answer === correctAnswer;
-        setIsCorrect(correct);
+        setIsCorrect(isAnswerCorrect);
 
-        if (correct) {
-            // Add the corresponding letter to solved problems
-            const letter = numberToLetter(currentProblem.result);
-            setSolvedProblems(prev => [...prev, letter]);
+        if (isAnswerCorrect) {
             setStreak(prev => prev + 1);
             
-            // Generate a new problem
-            generateProblem();
+            // Reveal next unrevealed letter
+            const nextIndex = findNextUnrevealedLetterIndex(nextLetterIndex, solvedLetters);
+            
+            if (nextIndex !== -1) {
+                const newSolvedLetters = [...solvedLetters];
+                newSolvedLetters[nextIndex] = true;
+                setSolvedLetters(newSolvedLetters);
+                setNextLetterIndex(nextIndex + 1);
+                
+                // Check if all letters are revealed
+                const remainingLetters = findNextUnrevealedLetterIndex(nextIndex + 1, newSolvedLetters);
+                if (remainingLetters === -1) {
+                    setIsMessageComplete(true);
+                } else {
+                    setCurrentProblem(generateProblem());
+                }
+            }
         } else {
             setStreak(0);
         }
+    }, [currentProblem, generateProblem, nextLetterIndex, solvedLetters, currentMessage]);
 
-        return correct;
-    };
-
-    // Get the current progress of revealed message
-    const getRevealedMessage = () => {
-        return message.split('').map((letter, index) => 
-            solvedProblems[index] ? letter : '_'
-        ).join('');
-    };
-
-    // Check if the current message is completely revealed
-    const isMessageComplete = () => {
-        return solvedProblems.length >= message.length;
-    };
-
-    // Reset the game with a new message
-    const resetGame = () => {
-        const newMessage = MESSAGES[Math.floor(Math.random() * MESSAGES.length)];
-        setMessage(newMessage);
-        setSolvedProblems([]);
-        setStreak(0);
-        generateProblem();
-        setIsCorrect(null);
-    };
+    const getRevealedMessage = useCallback(() => {
+        return currentMessage.split('').map((letter, index) => ({
+            letter,
+            revealed: solvedLetters[index],
+            isSpace: letter === ' '
+        }));
+    }, [currentMessage, solvedLetters]);
 
     return {
         currentProblem,
@@ -172,6 +218,6 @@ export const useMultiplicationCalculator = () => {
         streak,
         getRevealedMessage,
         isMessageComplete,
-        resetGame
+        startNewMessage
     };
 };
