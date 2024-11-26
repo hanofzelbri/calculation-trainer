@@ -31,7 +31,7 @@ export const MultiplicationCalculator: React.FC = () => {
 
             while (testSize > minSize) {
                 longestMessage.style.fontSize = `${testSize}px`;
-                
+
                 if (longestMessage.scrollWidth <= container.clientWidth) break;
                 testSize -= 2;
             }
@@ -66,8 +66,15 @@ export const MultiplicationCalculator: React.FC = () => {
         ));
     };
 
+    // Define the type for a letter item
+    type LetterItem = {
+        letter: string;
+        revealed: boolean;
+        isSpace: boolean;
+    };
+
     // Group the message into words
-    const messageWords = getRevealedMessage().reduce<Array<typeof getRevealedMessage>>((acc, item) => {
+    const messageWords = getRevealedMessage().reduce<LetterItem[][]>((acc, item) => {
         if (item.isSpace) {
             acc.push([]);
         } else {
@@ -81,8 +88,8 @@ export const MultiplicationCalculator: React.FC = () => {
         <div className="space-y-6">
             <Card className="p-6">
                 {/* Hidden element with longest possible message to calculate font size */}
-                <div 
-                    ref={longestMessageRef} 
+                <div
+                    ref={longestMessageRef}
                     className="absolute opacity-0 pointer-events-none whitespace-nowrap font-bold"
                     aria-hidden="true"
                 >
@@ -91,18 +98,17 @@ export const MultiplicationCalculator: React.FC = () => {
 
                 <div ref={messageRef} className="font-bold text-center space-y-4">
                     <div className="flex justify-center items-center min-h-[100px]">
-                        <div 
+                        <div
                             className="message-content flex flex-wrap justify-center gap-x-4 gap-y-2"
                             style={{ fontSize: `${fontSize}px` }}
                         >
                             {messageWords.map((word, wordIndex) => (
                                 <div key={wordIndex} className="message-word flex">
-                                    {word.map((item, letterIndex) => (
+                                    {word.map((item: LetterItem, letterIndex: React.Key | null | undefined) => (
                                         <span
                                             key={letterIndex}
-                                            className={`transition-all duration-300 ${
-                                                isMessageComplete ? 'text-green-600' : ''
-                                            }`}
+                                            className={`transition-all duration-300 ${isMessageComplete ? 'text-green-600' : ''
+                                                }`}
                                         >
                                             {item.revealed ? item.letter : '_'}
                                         </span>
@@ -122,7 +128,7 @@ export const MultiplicationCalculator: React.FC = () => {
                         </>
                     )}
                 </div>
-                
+
                 {!isMessageComplete && currentProblem && (
                     <div className="grid grid-cols-2 gap-4 mt-6">
                         {currentProblem.choices.map((choice) => (
@@ -140,7 +146,7 @@ export const MultiplicationCalculator: React.FC = () => {
 
                 {isMessageComplete && (
                     <div className="mt-6 text-center">
-                        <Button 
+                        <Button
                             onClick={startNewMessage}
                             className="text-xl px-8 py-6"
                             variant="default"

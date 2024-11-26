@@ -76,12 +76,6 @@ interface Problem {
     missingPosition: MissingPosition;
 }
 
-interface MessageItem {
-    letter: string;
-    revealed: boolean;
-    isSpace: boolean;
-}
-
 export const useMultiplicationCalculator = () => {
     const [currentProblem, setCurrentProblem] = useState<Problem | null>(null);
     const [currentMessage, setCurrentMessage] = useState('');
